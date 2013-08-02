@@ -1,0 +1,2 @@
+Content-Disposition: form-data; name="uploadedfile"; filename="testFile.txt"
+Content-Type: application/octet-stream
