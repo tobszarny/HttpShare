@@ -7,6 +7,10 @@ import java.io.StringWriter;
 
 import org.apache.commons.io.IOUtils;
 
+/**
+ * @author tomek
+ * 
+ */
 public class StreamUtil {
 
 	public static void copyStream(InputStream in, OutputStream out)

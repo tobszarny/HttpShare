@@ -5,6 +5,10 @@ import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.Headers;
 
+/**
+ * @author tomek
+ * 
+ */
 public class HttpUtil {
 
 	private static final String LINE_SEPARATOR = System

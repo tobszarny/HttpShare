@@ -7,6 +7,10 @@ import java.net.UnknownHostException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @author tomek
+ * 
+ */
 public class NetworkUtil {
 
 	private static final Logger logger = LoggerFactory
