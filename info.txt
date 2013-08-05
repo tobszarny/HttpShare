@@ -1,0 +1,7 @@
+Java:
+	Compilator: 1.6
+
+Project settings:
+	Maximum line widht: 120
+	Indent java: tab (4 spaces long)
+	
