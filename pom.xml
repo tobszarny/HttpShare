@@ -10,7 +10,7 @@
 	<name>HttpShare</name>
 	<description>Share files via HTTP without any servers installation</description>
 	<url>https://github.com/bilu/HttpShare</url>
-	<inceptionYear>2012?</inceptionYear>
+	<inceptionYear>2012</inceptionYear>
 	
 	<licenses>
 		<license>
@@ -66,6 +66,19 @@
 					<target>1.6</target>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<inherited>true</inherited>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							<mainClass>pl.biltech.httpshare.MainApplication</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -119,6 +132,11 @@
 			<artifactId>mockito-all</artifactId>
 			<version>1.9.5</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.easytesting</groupId>
+			<artifactId>fest-assert</artifactId>
+			<version>1.4</version>
 		</dependency>
 
 		<!-- EoF: Test dependencies -->

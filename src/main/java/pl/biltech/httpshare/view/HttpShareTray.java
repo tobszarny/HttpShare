@@ -90,14 +90,17 @@ public class HttpShareTray implements Tray {
 		aboutItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+
+				String version = getClass().getPackage()
+						.getImplementationVersion();
 				JOptionPane
-						.showMessageDialog(null,
-								"Quick file share via HTTP\n\n" +
-								"Free to use for everyone\n\n" +
-								"Author:   Paweł Bilewicz\n" +
-								"Version:  0.2\n" +
-								"Email:    pawel.bilewicz@gmail.com");
-				
+						.showMessageDialog(
+								null,
+								"Quick file share via HTTP\n\n"
+										+ "Free to use for everyone\n\n"
+										+ "Project url: https://github.com/bilu/HttpShare\n"
+										+ "Version:  " + version);
+
 			}
 		});
 		return aboutItem;
@@ -158,6 +161,7 @@ public class HttpShareTray implements Tray {
 		currentStatus = message;
 	}
 	
+	@Override
 	public void setIcon(Image image) {
 		trayIcon.setImage(image);
 	}
