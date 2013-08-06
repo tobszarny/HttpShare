@@ -35,12 +35,12 @@ public class NetworkUtil {
 			return startFrom;
 		} catch (IOException e) {
 		} finally {
-			closePort();
+			closeSocket();
 		}
 		return findFirstFreePort(startFrom + 1);
 	}
 
-	private void closePort() {
+	private void closeSocket() {
 		if (socket != null) {
 			try {
 				socket.close();
