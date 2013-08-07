@@ -2,14 +2,15 @@ package pl.biltech.httpshare.view.util;
 
 import java.io.InputStream;
 
-import org.junit.Assert;
 import lombok.Cleanup;
 
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- * @author tomek
+ * @author tomek, bilu
  * 
  */
 public class HttpUtilTest {
@@ -19,6 +20,8 @@ public class HttpUtilTest {
 	}
 
 	@Test
+	@Ignore
+	// TODO finish me
 	public void testGetBoundary() throws Exception {
 		throw new RuntimeException("not yet implemented");
 	}
