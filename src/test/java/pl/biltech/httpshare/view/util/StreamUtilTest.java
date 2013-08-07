@@ -7,6 +7,10 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+/**
+ * @author tomek
+ * 
+ */
 public class StreamUtilTest {
 
 	@Test

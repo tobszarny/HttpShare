@@ -16,6 +16,7 @@ public class NetworkUtil {
 	private static final Logger logger = LoggerFactory
 			.getLogger(NetworkUtil.class);
 
+	// FIXME recurent
 	public static int findFirstFreePort(int startFrom) {
 		logger.debug("findFirstFreePort called");
 		ServerSocket socket = null;

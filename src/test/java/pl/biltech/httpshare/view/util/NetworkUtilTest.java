@@ -4,6 +4,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * @author tomek
+ * 
+ */
 public class NetworkUtilTest {
 
 	@Before

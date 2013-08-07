@@ -19,15 +19,17 @@ import java.util.concurrent.Executors;
 
 import pl.biltech.httpshare.view.Tray;
 import pl.biltech.httpshare.view.util.ImageUtil;
+import pl.biltech.httpshare.view.util.NetworkUtil;
+import pl.biltech.httpshare.view.util.StreamUtil;
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
+@SuppressWarnings("restriction")
 public class Download {
 
-	private static final int DEFAULT_BUFFER_SIZE = 1024 * 4;
 	private final File file;
 	private int port = 80;
 	private final boolean closeAfterFirstDownload = true;
@@ -39,16 +41,25 @@ public class Download {
 	}
 
 	public void startServer() throws IOException {
-		findFirstFreePort();
+		port = NetworkUtil.findFirstFreePort(port);
 		InetSocketAddress address = new InetSocketAddress(port);
+
 		HttpServer server = HttpServer.create(address, 0);
 		server.createContext("/", getRedirectHttpHandler("/" + file.getName()));
-		server.createContext("/" + file.getName(), getDownloadFileHttpHandler(file, closeAfterFirstDownload));
+		server.createContext("/" + file.getName(),
+				getDownloadFileHttpHandler(file, closeAfterFirstDownload));
 		server.setExecutor(Executors.newCachedThreadPool());
 		server.start();
-		String url = InetAddress.getLocalHost().getHostAddress() + ((port != 80) ? ":" + port : "") + "/"
-		+ file.getName();
-		tray.displayMessage("Server is waiting for download at "+url, "The url was copied to clipboard");
+		StringBuilder urlBuilder = new StringBuilder("http://")
+				.append(NetworkUtil.getLocalHostName());
+		if (this.port != 80) {
+			urlBuilder.append(":").append(this.port);
+		}
+		urlBuilder.append("/").append(this.file.getName());
+
+		String url = urlBuilder.toString();
+		tray.displayMessage("Server is waiting for download at " + url,
+				"The url was copied to clipboard");
 		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 		clipboard.setContents(new StringSelection(url), new ClipboardOwner() {
 			@Override
@@ -56,31 +67,9 @@ public class Download {
 				// wywolane w momencie gdy ktos nadpisze schowek
 			}
 		});
-		tray.setStatus("Server is waiting for download at "+url);
-		tray.setIcon(ImageUtil.createImageFromFilePath("/images/pause.png", "Choose file"));
-	}
-
-	private void findFirstFreePort() {
-
-		//FIXME recurent
-		ServerSocket socket = null;
-		try {
-		    socket = new ServerSocket(port);
-		} catch (IOException e) {
-			port++;
-		    findFirstFreePort();
-		} finally { 
-		    // Clean up
-		    if (socket != null) {
-				try {
-					socket.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} 
-		    }
-		}
-		
+		tray.setStatus("Server is waiting for download at " + url);
+		tray.setIcon(ImageUtil.createImageFromFilePath("/images/pause.png",
+				"Choose file"));
 	}
 
 	private HttpHandler getRedirectHttpHandler(final String redirectUrl) {
@@ -94,7 +83,8 @@ public class Download {
 		};
 	}
 
-	private HttpHandler getDownloadFileHttpHandler(final File file, final boolean closeAfterFirstDownload) {
+	private HttpHandler getDownloadFileHttpHandler(final File file,
+			final boolean closeAfterFirstDownload) {
 		return new HttpHandler() {
 
 			public void handle(HttpExchange exchange) throws IOException {
@@ -102,19 +92,22 @@ public class Download {
 				String requestMethod = exchange.getRequestMethod();
 				if (requestMethod.equalsIgnoreCase("GET")) {
 					Headers responseHeaders = exchange.getResponseHeaders();
-					responseHeaders.set("Content-Type", "application/octet-stream");
+					responseHeaders.set("Content-Type",
+							"application/octet-stream");
 					responseHeaders.set("Content-Length", "" + file.length());
 					exchange.sendResponseHeaders(200, 0);
-					
-					String message = format("Reciver %s [%s]", exchange.getRemoteAddress().getHostName(),
-							exchange.getRemoteAddress().getAddress().getHostAddress());
+
+					String message = format("Reciver %s [%s]", exchange
+							.getRemoteAddress().getHostName(), exchange
+							.getRemoteAddress().getAddress().getHostAddress());
 					tray.displayMessage("Download started", message);
-					tray.setStatus("Downloading. "+message);
-					tray.setIcon(ImageUtil.createImageFromFilePath("/images/uploading.png", "Choose file"));
+					tray.setStatus("Downloading. " + message);
+					tray.setIcon(ImageUtil.createImageFromFilePath(
+							"/images/uploading.png", "Choose file"));
 
 					OutputStream out = exchange.getResponseBody();
 					InputStream in = new FileInputStream(file);
-					copyStream(out, in);
+					StreamUtil.copyStream(in, out);
 
 					System.out.println(message);
 					if (closeAfterFirstDownload) {
@@ -126,16 +119,6 @@ public class Download {
 						tray.exit();
 					}
 				}
-			}
-
-			private void copyStream(OutputStream out, InputStream in) throws IOException {
-				byte[] bytes = new byte[DEFAULT_BUFFER_SIZE];
-				int size;
-				while ((size = in.read(bytes)) != -1)
-					out.write(bytes, 0, size);
-				out.flush();
-				out.close();
-				in.close();
 			}
 		};
 	}

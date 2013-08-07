@@ -9,6 +9,7 @@ import com.sun.net.httpserver.Headers;
  * @author tomek
  * 
  */
+@SuppressWarnings("restriction")
 public class HttpUtil {
 
 	private static final String LINE_SEPARATOR = System
