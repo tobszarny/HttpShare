@@ -41,7 +41,7 @@ public class Download {
 	}
 
 	public void startServer() throws IOException {
-		port = NetworkUtil.findFirstFreePort(port);
+		port = new NetworkUtil().findFirstFreePort(port);
 		InetSocketAddress address = new InetSocketAddress(port);
 
 		HttpServer server = HttpServer.create(address, 0);
