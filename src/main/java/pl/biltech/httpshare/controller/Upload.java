@@ -21,6 +21,8 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import pl.biltech.httpshare.model.HttpStatusCode;
+import pl.biltech.httpshare.model.HttpMethod;
 import pl.biltech.httpshare.view.Tray;
 import pl.biltech.httpshare.view.util.HttpUtil;
 import pl.biltech.httpshare.view.util.ImageUtil;
@@ -136,13 +138,13 @@ public class Upload {
 				logger.info("Context = " + exchange.getHttpContext().getPath());
 				String requestMethod = exchange.getRequestMethod();
 				logger.info("HTTP method = " + requestMethod);
-				if (requestMethod.equalsIgnoreCase("GET")) {
+				if (requestMethod.equalsIgnoreCase(HttpMethod.GET.name())) {
 
 					Headers responseHeaders = exchange.getResponseHeaders();
 					responseHeaders.set("Content-Type", "text/html");
 					responseHeaders.set("Content-Length",
 							Long.toString(UPLOAD_PAGE.length()));
-					exchange.sendResponseHeaders(200, 0L);
+					exchange.sendResponseHeaders(HttpStatusCode.Accepted.getCode(), 0L);
 
 					String message = String.format("Reciever %s [%s]",
 							new Object[] {
@@ -173,7 +175,7 @@ public class Upload {
 						logger.info("Exiting!");
 						Upload.this.tray.exit();
 					}
-				} else if (requestMethod.equalsIgnoreCase("POST")) {
+				} else if (requestMethod.equalsIgnoreCase(HttpMethod.POST.name())) {
 					logger.info("POST caught");
 
 					Exception exception = null;
@@ -314,7 +316,7 @@ public class Upload {
 			private void httpRedirect(HttpExchange exchange, String path)
 					throws IOException {
 				exchange.getResponseHeaders().add("Location", path);
-				exchange.sendResponseHeaders(301, 0);
+				exchange.sendResponseHeaders(HttpStatusCode.MovedPermanently.getCode(), 0);
 				exchange.getResponseBody().close();
 			}
 
