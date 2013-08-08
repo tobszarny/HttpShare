@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+
+		<head>
+			<meta charset="utf-8">
+			<title>Upload page</title>
+		</head>
+	<body>
+		<form action="@@actionURL@@" enctype="multipart/form-data" method="POST">
+			<input name="MAX_FILE_SIZE" type="hidden" value="100000"/>Choose a file to upload: 
+			
+			<input name="uploadedfile" type="file"/>
+			<br/>
+			<input type="submit" value="Upload File"/></form>
+	</body>
+</html>
