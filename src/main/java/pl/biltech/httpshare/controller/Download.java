@@ -1,4 +1,4 @@
-package pl.biltech.httpshare.model;
+package pl.biltech.httpshare.controller;
 
 import static java.lang.String.format;
 
@@ -15,7 +15,11 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.net.UnknownHostException;
 import java.util.concurrent.Executors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import pl.biltech.httpshare.view.Tray;
 import pl.biltech.httpshare.view.util.ImageUtil;
@@ -27,13 +31,21 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
+/**
+ * @author bilu, tomek
+ *
+ */
 @SuppressWarnings("restriction")
 public class Download {
+	
+	private static final Logger logger = LoggerFactory.getLogger(Download.class);
 
 	private final File file;
 	private int port = 80;
 	private final boolean closeAfterFirstDownload = true;
 	private final Tray tray;
+	
+	private NetworkUtil networkUtil;
 
 	public Download(File file, Tray tray) {
 		this.file = file;
@@ -41,7 +53,8 @@ public class Download {
 	}
 
 	public void startServer() throws IOException {
-		port = new NetworkUtil().findFirstFreePort(port);
+		networkUtil = new NetworkUtil();
+		port = networkUtil.findFirstFreePort(port);
 		InetSocketAddress address = new InetSocketAddress(port);
 
 		HttpServer server = HttpServer.create(address, 0);
@@ -50,14 +63,8 @@ public class Download {
 				getDownloadFileHttpHandler(file, closeAfterFirstDownload));
 		server.setExecutor(Executors.newCachedThreadPool());
 		server.start();
-		StringBuilder urlBuilder = new StringBuilder("http://")
-				.append(NetworkUtil.getLocalHostName());
-		if (this.port != 80) {
-			urlBuilder.append(":").append(this.port);
-		}
-		urlBuilder.append("/").append(this.file.getName());
 
-		String url = urlBuilder.toString();
+		String url = buildUrl();
 		tray.displayMessage("Server is waiting for download at " + url,
 				"The url was copied to clipboard");
 		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -70,6 +77,17 @@ public class Download {
 		tray.setStatus("Server is waiting for download at " + url);
 		tray.setIcon(ImageUtil.createImageFromFilePath("/images/pause.png",
 				"Choose file"));
+	}
+
+	private String buildUrl()
+			throws UnknownHostException {
+		StringBuilder urlBuilder = new StringBuilder("http://")
+				.append(networkUtil.getLocalHostName());
+		if (this.port != 80) {
+			urlBuilder.append(":").append(this.port);
+		}
+		urlBuilder.append("/").append(this.file.getName());
+		return urlBuilder.toString();
 	}
 
 	private HttpHandler getRedirectHttpHandler(final String redirectUrl) {
