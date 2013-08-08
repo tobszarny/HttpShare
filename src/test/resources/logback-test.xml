@@ -12,7 +12,7 @@
 	</appender>
 
 	<appender name="FILE" class="ch.qos.logback.core.FileAppender">
-		<file>httpShare.log</file>
+		<file>httpShare-test.log</file>
 
 		<encoder>
 			<pattern>%12d{HH:mm:ss.SSS} %6level %logger{26} - %msg%n</pattern>
