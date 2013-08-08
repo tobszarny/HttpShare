@@ -20,8 +20,7 @@ public class NetworkUtil {
 	private static final Logger logger = LoggerFactory.getLogger(NetworkUtil.class);
 	private ServerSocket socket;
 
-	// FIXME: any reason this method should be static while others are not?
-	public static String getLocalHostName() throws UnknownHostException {
+	public String getLocalHostName() throws UnknownHostException {
 		return java.net.InetAddress.getLocalHost().getHostName();
 	}
 
