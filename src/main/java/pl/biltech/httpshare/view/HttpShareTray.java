@@ -14,7 +14,7 @@ import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
-import pl.biltech.httpshare.model.Download;
+import pl.biltech.httpshare.controller.Download;
 import pl.biltech.httpshare.view.util.ImageUtil;
 
 public class HttpShareTray implements Tray {
