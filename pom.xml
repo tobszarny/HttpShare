@@ -3,15 +3,20 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>pl.biltech</groupId>
 	<artifactId>HttpShare</artifactId>
+	<packaging>pom</packaging>
 	<version>0.0.1-SNAPSHOT</version>
 
+	<modules>
+		<module>HttpShare-core</module>
+		<module>HttpShare-ui</module>
+	</modules>
 
 	<!-- More Project Information -->
 	<name>HttpShare</name>
 	<description>Share files via HTTP without any servers installation</description>
 	<url>https://github.com/bilu/HttpShare</url>
 	<inceptionYear>2012</inceptionYear>
-	
+
 	<licenses>
 		<license>
 			<name>Apache 2</name>
@@ -20,7 +25,7 @@
 			<comments>A business-friendly OSS license</comments>
 		</license>
 	</licenses>
-	
+
 	<developers>
 		<developer>
 			<id>bilu</id>
@@ -57,29 +62,18 @@
 	</properties>
 
 	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<inherited>true</inherited>
-				<configuration>
-					<archive>
-						<manifest>
-							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-							<mainClass>pl.biltech.httpshare.MainApplication</mainClass>
-						</manifest>
-					</archive>
-				</configuration>
-			</plugin>
-		</plugins>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.1</version>
+					<configuration>
+						<source>1.6</source>
+						<target>1.6</target>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 
 	<dependencies>
@@ -160,4 +154,5 @@
 
 		<!-- EoF: Experimental -->
 	</dependencies>
+
 </project>
