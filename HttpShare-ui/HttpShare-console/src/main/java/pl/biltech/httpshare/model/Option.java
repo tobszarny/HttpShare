@@ -11,19 +11,19 @@ public enum Option {
 
 	SHARE("--share"), DROP("--drop-in"), NO_UI("--no-ui");
 
-	private final String modiffier;
+	private final String modifier;
 
 	private Option(String modiffier) {
-		this.modiffier = modiffier;
+		this.modifier = modiffier;
 	}
 
 	public String modifier() {
-		return modiffier;
+		return modifier;
 	}
 
-	public static Option byModifier(String modiffier) {
+	public static Option byModifier(String modifier) {
 		for (Option option : Option.values()) {
-			if (option.modiffier.equals(modiffier)) {
+			if (option.modifier.equals(modifier)) {
 				return option;
 			}
 		}
@@ -33,7 +33,7 @@ public enum Option {
 	public static List<String> modifiers() {
 		List<String> modiffierList = new ArrayList<String>();
 		for (Option option : Option.values()) {
-			modiffierList.add(option.modiffier);
+			modiffierList.add(option.modifier);
 		}
 		return modiffierList;
 	}
