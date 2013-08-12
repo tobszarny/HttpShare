@@ -8,4 +8,11 @@
   <artifactId>HttpShare-console</artifactId>
   <name>HttpShare-console</name>
   <description>Console user interface</description>
+  <dependencies>
+  	<dependency>
+  		<groupId>pl.biltech</groupId>
+  		<artifactId>HttpShare-core</artifactId>
+  		<version>0.0.1-SNAPSHOT</version>
+  	</dependency>
+  </dependencies>
 </project>
