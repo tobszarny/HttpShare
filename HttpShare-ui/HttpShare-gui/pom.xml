@@ -7,5 +7,24 @@
   </parent>
   <artifactId>HttpShare-gui</artifactId>
   <name>HttpShare-gui</name>
-  <description>Swing based user interface</description>
+  <description>AWT based user interface</description>
+  
+  	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<inherited>true</inherited>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							<mainClass>pl.biltech.httpshare.ui.awt.Startup</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	
 </project>

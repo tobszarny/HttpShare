@@ -1,4 +1,4 @@
-package pl.biltech.httpshare.view.util;
+package pl.biltech.httpshare.ui.awt.util;
 
 import static java.lang.String.format;
 

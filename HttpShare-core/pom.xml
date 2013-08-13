@@ -9,7 +9,6 @@
 	<artifactId>HttpShare-core</artifactId>
 	<name>HttpShare-core</name>
 
-
 	<build>
 		<plugins>
 			<plugin>
@@ -20,14 +19,11 @@
 					<archive>
 						<manifest>
 							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-							<mainClass>pl.biltech.httpshare.MainApplication</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
 			</plugin>
-
 		</plugins>
 	</build>
-
-
+	
 </project>
