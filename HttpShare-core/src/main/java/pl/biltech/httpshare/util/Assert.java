@@ -38,6 +38,6 @@ public abstract class Assert {
 	}
 
 	public static void isNotNull(Object object) {
-		isNull(object, "[Assertion failed] - the object argument must not be null");
+		isNotNull(object, "[Assertion failed] - the object argument must not be null");
 	}
 }

@@ -13,4 +13,11 @@
   	<module>HttpShare-console</module>
   	<module>HttpShare-gui</module>
   </modules>
+  <dependencies>
+  	<dependency>
+  		<groupId>pl.biltech</groupId>
+  		<artifactId>HttpShare-core</artifactId>
+  		<version>${project.version}</version>
+  	</dependency>
+  </dependencies>
 </project>

@@ -1,10 +1,6 @@
 package pl.biltech.httpshare.ui.awt.element;
 
 import static pl.biltech.httpshare.ui.awt.element.Icon.DEFAULT;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
 import pl.biltech.httpshare.ui.awt.action.IconChangeActionListener;
 
 
@@ -14,38 +10,35 @@ import pl.biltech.httpshare.ui.awt.action.IconChangeActionListener;
  */
 public class TrayIcon extends java.awt.TrayIcon implements IconChangeActionListener {
 
-	private String currentStatus = "";
+	private String currentStatus = "Wating";
 
 	public TrayIcon(PopupMenu popupMenu) {
 		super(DEFAULT.getImage());
 
 		setImageAutoSize(true);
 		setPopupMenu(popupMenu);
-		addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				displayMessage("Status:", currentStatus);
-			}
-		});
+
+		// addActionListener(new ActionListener() {
+		// @Override
+		// public void actionPerformed(ActionEvent e) {
+		// displayMessage("Status:", currentStatus);
+		// }
+		// });
 	}
 
-	// TODO consider remove
-	private void displayMessage(String title, String message) {
+	public void displayMessage(String title, String message) {
 		displayMessage(title, message, TrayIcon.MessageType.NONE);
 	}
 
-	// TODO consider remove
-	private void displayMessageWarning(String title, String message) {
+	public void displayWarning(String title, String message) {
 		displayMessage(title, message, TrayIcon.MessageType.WARNING);
 	}
 
-	// TODO consider remove
-	private void displayMessageError(String title, String message) {
+	public void displayError(String title, String message) {
 		displayMessage(title, message, TrayIcon.MessageType.ERROR);
 	}
 
-	// TODO consider remove
-	private void displayMessageInfo(String title, String message) {
+	public void displayInfo(String title, String message) {
 		displayMessage(title, message, TrayIcon.MessageType.INFO);
 	}
 
