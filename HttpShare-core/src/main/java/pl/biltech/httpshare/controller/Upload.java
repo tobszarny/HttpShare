@@ -144,7 +144,8 @@ public class Upload {
 					responseHeaders.set("Content-Type", "text/html");
 					responseHeaders.set("Content-Length",
 							Long.toString(UPLOAD_PAGE.length()));
-					exchange.sendResponseHeaders(HttpStatusCode.Accepted.getCode(), 0L);
+					exchange.sendResponseHeaders(
+							HttpStatusCode.ACCEPTED.getCode(), 0L);
 
 					String message = String.format("Reciever %s [%s]",
 							new Object[] {
@@ -316,7 +317,8 @@ public class Upload {
 			private void httpRedirect(HttpExchange exchange, String path)
 					throws IOException {
 				exchange.getResponseHeaders().add("Location", path);
-				exchange.sendResponseHeaders(HttpStatusCode.MovedPermanently.getCode(), 0);
+				exchange.sendResponseHeaders(
+						HttpStatusCode.MOVED_PERMANENTLY.getCode(), 0);
 				exchange.getResponseBody().close();
 			}
 
