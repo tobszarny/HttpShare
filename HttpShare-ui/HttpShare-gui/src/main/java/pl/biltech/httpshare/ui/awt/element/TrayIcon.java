@@ -46,7 +46,6 @@ public class TrayIcon extends java.awt.TrayIcon implements IconChangeActionListe
 	public void iconChangeAction(Icon icon) {
 		setImage(icon.getImage());
 		currentStatus = icon.getDescription();
-		displayStatus();
 	}
 
 	public void displayStatus() {

@@ -3,9 +3,12 @@ package pl.biltech.httpshare;
 import static pl.biltech.httpshare.util.Assert.isNotNull;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import pl.biltech.httpshare.server.HttpShareServer;
 
 /**
  * Facade for core functionalities
@@ -16,9 +19,11 @@ import org.slf4j.LoggerFactory;
 public class HttpShare {
 
 	private static final Logger logger = LoggerFactory.getLogger(HttpShare.class);
+	private HttpShareServer httpShareServer;
 
 	public void start() {
-		logger.error("Not yet implemented");
+		httpShareServer = new HttpShareServer();
+
 	}
 
 	public boolean isStarted() {
@@ -37,7 +42,11 @@ public class HttpShare {
 	public void addFileToDownload(File file) {
 		isNotNull(file);
 		logger.debug("Adding file to download: {}", file.getAbsolutePath());
-		logger.error("Not yet implemented");
+		try {
+			httpShareServer.start(file);
+		} catch (IOException e) {
+			logger.error("Error during file upload", e);
+		}
 	}
 
 	public String getDownloadUrl() {
