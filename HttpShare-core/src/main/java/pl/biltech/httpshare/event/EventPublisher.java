@@ -12,7 +12,9 @@ import java.util.List;
  */
 public interface EventPublisher {
 
-	void publish(Event event);
+	void publishSync(Event event);
+
+	void publishAsync(Event event);
 
 	void addEventSubscriber(EventSubscriber<? extends Event> subscriber);
 

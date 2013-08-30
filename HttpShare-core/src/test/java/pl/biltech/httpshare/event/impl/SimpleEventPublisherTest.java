@@ -18,13 +18,10 @@ import pl.biltech.httpshare.event.EventSubscriber;
  */
 public class SimpleEventPublisherTest {
 
-	// @Captor
-	// private ArgumentCaptor<DownloadStartedEvent> downloadStartedEventCaptor;
 	private Map<EventSubscriber<? extends Event>, Event> handledEvents;
 
 	@Before
 	public void before() {
-		// initMocks(this);
 		handledEvents = new HashMap<EventSubscriber<? extends Event>, Event>();
 	}
 
@@ -39,7 +36,7 @@ public class SimpleEventPublisherTest {
 		DownloadStartedEvent eventToPush = new DownloadStartedEvent("test message");
 
 		// when
-		ep.publish(eventToPush);
+		ep.publishSync(eventToPush);
 
 		// then
 		assertThat(handledEvents).hasSize(2);
@@ -58,7 +55,7 @@ public class SimpleEventPublisherTest {
 		DownloadStartedEvent eventToPush = new DownloadStartedEvent("test message");
 
 		// when
-		ep.publish(eventToPush);
+		ep.publishSync(eventToPush);
 
 		// then
 		assertThat(handledEvents).hasSize(1);
@@ -78,8 +75,8 @@ public class SimpleEventPublisherTest {
 		DownloadProgressEvent downloadProgressEvent = new DownloadProgressEvent(44);
 
 		// when
-		ep.publish(downloadStartedEvent);
-		ep.publish(downloadProgressEvent);
+		ep.publishSync(downloadStartedEvent);
+		ep.publishSync(downloadProgressEvent);
 
 		// then
 		assertThat(handledEvents).hasSize(2);
@@ -106,4 +103,30 @@ public class SimpleEventPublisherTest {
 		};
 		return subscriber;
 	}
+
+	@Test
+	// NOTE: This is mainly lerning test, it's rather about demonstrating how
+	// async is working
+	public void shouldAsyncPublishigBeSubscribersExceptionResistant() throws InterruptedException {
+		EventPublisher ep = SimpleEventPublisher.INSTANCE;
+		EventSubscriber<DownloadFinishedEvent> dse1 = createDownloadStaEventSubscriberWithExceptionThrown();
+		EventSubscriber<DownloadFinishedEvent> dse2 = createDownloadStaEventSubscriberWithExceptionThrown();
+		ep.addEventSubscriber(dse1);
+		ep.addEventSubscriber(dse2);
+		DownloadStartedEvent eventToPush = new DownloadStartedEvent("test message");
+
+		ep.publishAsync(eventToPush);
+		Thread.sleep(1000);
+	}
+
+	private EventSubscriber<DownloadFinishedEvent> createDownloadStaEventSubscriberWithExceptionThrown() {
+		EventSubscriber<DownloadFinishedEvent> subscriber = new EventSubscriber<DownloadFinishedEvent>() {
+			@Override
+			public void handleEvent(DownloadFinishedEvent event) {
+				throw new IllegalStateException("Intentionally thrown for: " + this);
+			}
+		};
+		return subscriber;
+	}
+
 }

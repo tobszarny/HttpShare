@@ -84,7 +84,7 @@ public class HttpShareServer {
 				// wywolane w momencie gdy ktos nadpisze schowek
 			}
 		});
-		eventPublisher.publish(new DownloadWaitingForRequestEvent(url));
+		eventPublisher.publishAsync(new DownloadWaitingForRequestEvent(url));
 	}
 
 	private String buildUrl(File file) throws UnknownHostException {
@@ -123,7 +123,7 @@ public class HttpShareServer {
 
 					String message = format("Reciver %s [%s]", exchange.getRemoteAddress().getHostName(), exchange
 							.getRemoteAddress().getAddress().getHostAddress());
-					eventPublisher.publish(new DownloadStartedEvent(message));
+					eventPublisher.publishAsync(new DownloadStartedEvent(message));
 
 					OutputStream out = exchange.getResponseBody();
 					InputStream in = new FileInputStream(file);
@@ -132,7 +132,7 @@ public class HttpShareServer {
 					// TODO incorporate in copy mechanism
 					// eventPublisher.publish(new DownloadProgressEvent(32));
 
-					eventPublisher.publish(new DownloadFinishedEvent(message));
+					eventPublisher.publishAsync(new DownloadFinishedEvent(message));
 				}
 			}
 		};
