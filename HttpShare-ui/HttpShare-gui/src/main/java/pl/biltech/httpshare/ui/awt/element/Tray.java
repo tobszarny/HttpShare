@@ -13,12 +13,12 @@ import org.slf4j.LoggerFactory;
 
 import pl.biltech.httpshare.HttpShare;
 import pl.biltech.httpshare.event.Event;
-import pl.biltech.httpshare.event.EventPublisher;
+import pl.biltech.httpshare.event.EventManager;
 import pl.biltech.httpshare.event.EventSubscriber;
+import pl.biltech.httpshare.event.impl.AsyncEventManager;
 import pl.biltech.httpshare.event.impl.DownloadFinishedEvent;
 import pl.biltech.httpshare.event.impl.DownloadProgressEvent;
 import pl.biltech.httpshare.event.impl.DownloadStartedEvent;
-import pl.biltech.httpshare.event.impl.SimpleEventPublisher;
 import pl.biltech.httpshare.ui.awt.action.AddFileActionListener;
 import pl.biltech.httpshare.ui.awt.action.ExitActionListener;
 
@@ -33,8 +33,7 @@ public class Tray implements AddFileActionListener, ExitActionListener {
 	private SystemTray systemTray;
 	private TrayIcon trayIcon;
 	private final HttpShare httpShare = new HttpShare();
-	private final EventPublisher eventPublisher = SimpleEventPublisher.INSTANCE;
-	private List<EventSubscriber<? extends Event>> subscribers;
+	private final EventManager eventManager = AsyncEventManager.INSTANCE;
 	
 	public Tray() {
 		if (!SystemTray.isSupported()) {
@@ -55,8 +54,9 @@ public class Tray implements AddFileActionListener, ExitActionListener {
 		}
 		trayIcon.displayInfo("HttpShare", "Application started");
 
-		subscribers = createEventSubscribers();
-		eventPublisher.addEventSubscribers(subscribers);
+		for (EventSubscriber<? extends Event> eventSubscriber : createEventSubscribers()) {
+			eventManager.addEventSubscriber(eventSubscriber);
+		}
 	}
 
 	private List<EventSubscriber<? extends Event>> createEventSubscribers() {

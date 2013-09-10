@@ -22,10 +22,10 @@ import org.slf4j.LoggerFactory;
 
 import pl.biltech.httpshare.annotation.VisibleForTesting;
 import pl.biltech.httpshare.event.EventPublisher;
+import pl.biltech.httpshare.event.impl.AsyncEventManager;
 import pl.biltech.httpshare.event.impl.DownloadFinishedEvent;
 import pl.biltech.httpshare.event.impl.DownloadStartedEvent;
 import pl.biltech.httpshare.event.impl.DownloadWaitingForRequestEvent;
-import pl.biltech.httpshare.event.impl.SimpleEventPublisher;
 import pl.biltech.httpshare.view.util.NetworkUtil;
 import pl.biltech.httpshare.view.util.StreamUtil;
 
@@ -56,7 +56,7 @@ public class HttpShareServer {
 	private final EventPublisher eventPublisher;
 
 	public HttpShareServer() {
-		eventPublisher = SimpleEventPublisher.INSTANCE;
+		eventPublisher = AsyncEventManager.INSTANCE.createEventPublisher();
 	}
 
 	@VisibleForTesting
@@ -84,7 +84,7 @@ public class HttpShareServer {
 				// wywolane w momencie gdy ktos nadpisze schowek
 			}
 		});
-		eventPublisher.publishAsync(new DownloadWaitingForRequestEvent(url));
+		eventPublisher.publish(new DownloadWaitingForRequestEvent(url));
 	}
 
 	private String buildUrl(File file) throws UnknownHostException {
@@ -123,7 +123,7 @@ public class HttpShareServer {
 
 					String message = format("Reciver %s [%s]", exchange.getRemoteAddress().getHostName(), exchange
 							.getRemoteAddress().getAddress().getHostAddress());
-					eventPublisher.publishAsync(new DownloadStartedEvent(message));
+					eventPublisher.publish(new DownloadStartedEvent(message));
 
 					OutputStream out = exchange.getResponseBody();
 					InputStream in = new FileInputStream(file);
@@ -132,7 +132,7 @@ public class HttpShareServer {
 					// TODO incorporate in copy mechanism
 					// eventPublisher.publish(new DownloadProgressEvent(32));
 
-					eventPublisher.publishAsync(new DownloadFinishedEvent(message));
+					eventPublisher.publish(new DownloadFinishedEvent(message));
 				}
 			}
 		};

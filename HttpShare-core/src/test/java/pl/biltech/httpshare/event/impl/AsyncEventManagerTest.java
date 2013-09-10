@@ -13,32 +13,41 @@ import pl.biltech.httpshare.event.EventPublisher;
 import pl.biltech.httpshare.event.EventSubscriber;
 
 /**
+ * NOTE: This are mainly lerning tests, it's rather about demonstrating how
+ * async should work. Consider @Ignor addition
+ * 
  * @author bilu
  * 
  */
-public class SimpleEventPublisherTest {
+public class AsyncEventManagerTest {
 
+	private static final int MILLIS = 200;
 	private Map<EventSubscriber<? extends Event>, Event> handledEvents;
+	private AsyncEventManager eventManager;
+	private EventPublisher eventPublisher;
 
 	@Before
 	public void before() {
 		handledEvents = new HashMap<EventSubscriber<? extends Event>, Event>();
+		eventManager = AsyncEventManager.INSTANCE;
+		eventPublisher = eventManager.createEventPublisher();
+
 	}
 
 	@Test
 	public void shouldTheSameSubscribersReceiveTheSameEvent() throws Exception {
 		// given
-		EventPublisher ep = SimpleEventPublisher.INSTANCE;
 		EventSubscriber<DownloadStartedEvent> dse1 = createDownloadStaEventSubscriber();
 		EventSubscriber<DownloadStartedEvent> dse2 = createDownloadStaEventSubscriber();
-		ep.addEventSubscriber(dse1);
-		ep.addEventSubscriber(dse2);
+		eventManager.addEventSubscriber(dse1);
+		eventManager.addEventSubscriber(dse2);
 		DownloadStartedEvent eventToPush = new DownloadStartedEvent("test message");
 
 		// when
-		ep.publishSync(eventToPush);
+		eventPublisher.publish(eventToPush);
 
 		// then
+		Thread.sleep(MILLIS);
 		assertThat(handledEvents).hasSize(2);
 		assertThat(handledEvents.get(dse1)).isEqualTo(eventToPush);
 		assertThat(handledEvents.get(dse2)).isEqualTo(eventToPush);
@@ -47,17 +56,17 @@ public class SimpleEventPublisherTest {
 	@Test
 	public void shouldOnlyOneSubscriberReceiveTheEvent() throws Exception {
 		// given
-		EventPublisher ep = SimpleEventPublisher.INSTANCE;
 		EventSubscriber<DownloadStartedEvent> dse1 = createDownloadStaEventSubscriber();
 		EventSubscriber<DownloadProgressEvent> dse2 = createDownloadProgressEventSubscriber();
-		ep.addEventSubscriber(dse1);
-		ep.addEventSubscriber(dse2);
+		eventManager.addEventSubscriber(dse1);
+		eventManager.addEventSubscriber(dse2);
 		DownloadStartedEvent eventToPush = new DownloadStartedEvent("test message");
 
 		// when
-		ep.publishSync(eventToPush);
+		eventPublisher.publish(eventToPush);
 
 		// then
+		Thread.sleep(MILLIS);
 		assertThat(handledEvents).hasSize(1);
 		assertThat(handledEvents.get(dse1)).isEqualTo(eventToPush);
 		assertThat(handledEvents.get(dse2)).isNull();
@@ -66,19 +75,19 @@ public class SimpleEventPublisherTest {
 	@Test
 	public void shouldEachSubscriberReceiveCorrespondingEvent() throws Exception {
 		// given
-		EventPublisher ep = SimpleEventPublisher.INSTANCE;
 		EventSubscriber<DownloadStartedEvent> dse1 = createDownloadStaEventSubscriber();
 		EventSubscriber<DownloadProgressEvent> dse2 = createDownloadProgressEventSubscriber();
-		ep.addEventSubscriber(dse1);
-		ep.addEventSubscriber(dse2);
+		eventManager.addEventSubscriber(dse1);
+		eventManager.addEventSubscriber(dse2);
 		DownloadStartedEvent downloadStartedEvent = new DownloadStartedEvent("test message");
 		DownloadProgressEvent downloadProgressEvent = new DownloadProgressEvent(44);
 
 		// when
-		ep.publishSync(downloadStartedEvent);
-		ep.publishSync(downloadProgressEvent);
+		eventPublisher.publish(downloadStartedEvent);
+		eventPublisher.publish(downloadProgressEvent);
 
 		// then
+		Thread.sleep(MILLIS);
 		assertThat(handledEvents).hasSize(2);
 		assertThat(handledEvents.get(dse1)).isEqualTo(downloadStartedEvent);
 		assertThat(handledEvents.get(dse2)).isEqualTo(downloadProgressEvent);
@@ -105,18 +114,15 @@ public class SimpleEventPublisherTest {
 	}
 
 	@Test
-	// NOTE: This is mainly lerning test, it's rather about demonstrating how
-	// async is working
 	public void shouldAsyncPublishigBeSubscribersExceptionResistant() throws InterruptedException {
-		EventPublisher ep = SimpleEventPublisher.INSTANCE;
 		EventSubscriber<DownloadFinishedEvent> dse1 = createDownloadStaEventSubscriberWithExceptionThrown();
 		EventSubscriber<DownloadFinishedEvent> dse2 = createDownloadStaEventSubscriberWithExceptionThrown();
-		ep.addEventSubscriber(dse1);
-		ep.addEventSubscriber(dse2);
+		eventManager.addEventSubscriber(dse1);
+		eventManager.addEventSubscriber(dse2);
 		DownloadStartedEvent eventToPush = new DownloadStartedEvent("test message");
 
-		ep.publishAsync(eventToPush);
-		Thread.sleep(1000);
+		eventPublisher.publish(eventToPush);
+		Thread.sleep(MILLIS);
 	}
 
 	private EventSubscriber<DownloadFinishedEvent> createDownloadStaEventSubscriberWithExceptionThrown() {

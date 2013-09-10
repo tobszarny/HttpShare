@@ -1,10 +1,9 @@
 package pl.biltech.httpshare.event;
 
-import java.util.List;
 
 /**
- * Simple publish mechanism interface that allows add event subscribers.
- * Subscribers specifies what kind of event they are interested in
+ * Publish mechanism interface that allows simply publish events of all subtypes
+ * of Event
  * 
  * @see {@link Event}, {@link EventSubscriber}
  * 
@@ -12,15 +11,13 @@ import java.util.List;
  */
 public interface EventPublisher {
 
-	void publishSync(Event event);
+	/**
+	 * Send event object to all interested subscribers subscribed by
+	 * {@link EventManager}
+	 * 
+	 * @param event
+	 *            - subtype of Event to be published
+	 */
+	void publish(Event event);
 
-	void publishAsync(Event event);
-
-	void addEventSubscriber(EventSubscriber<? extends Event> subscriber);
-
-	void removeEventSubscriber(EventSubscriber<? extends Event> subscriber);
-
-	void addEventSubscribers(List<EventSubscriber<? extends Event>> subscribers);
-
-	void removeEventSubscribers(List<EventSubscriber<? extends Event>> subscribers);
 }
