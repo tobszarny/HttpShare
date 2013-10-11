@@ -1,4 +1,4 @@
-package pl.biltech.httpshare.server.support;
+package pl.biltech.httpshare.server.support.impl;
 
 import static java.lang.String.format;
 import static pl.biltech.httpshare.model.HttpStatusCode.TEMPORARY_REDIRECT_HTTP_1_1;
@@ -13,6 +13,7 @@ import pl.biltech.httpshare.event.EventPublisher;
 import pl.biltech.httpshare.event.impl.DownloadFinishedEvent;
 import pl.biltech.httpshare.event.impl.DownloadStartedEvent;
 import pl.biltech.httpshare.model.HttpStatusCode;
+import pl.biltech.httpshare.server.support.HttpHandlerFactory;
 import pl.biltech.httpshare.util.StreamUtil;
 
 import com.sun.net.httpserver.Headers;

@@ -21,7 +21,7 @@ import pl.biltech.httpshare.event.EventPublisher;
 import pl.biltech.httpshare.event.impl.DownloadWaitingForRequestEvent;
 import pl.biltech.httpshare.server.HttpShareServer;
 import pl.biltech.httpshare.server.support.HttpHandlerFactory;
-import pl.biltech.httpshare.server.support.StandardHttpHandlerFactory;
+import pl.biltech.httpshare.server.support.impl.StandardHttpHandlerFactory;
 import pl.biltech.httpshare.util.NetworkUtil;
 
 import com.sun.net.httpserver.HttpServer;
