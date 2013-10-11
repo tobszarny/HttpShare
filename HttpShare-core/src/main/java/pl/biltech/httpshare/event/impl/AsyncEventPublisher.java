@@ -1,6 +1,6 @@
 package pl.biltech.httpshare.event.impl;
 
-import static pl.biltech.httpshare.util.Assert.isNotNull;
+import static pl.biltech.httpshare.util.Assert.assertNotNull;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.concurrent.ExecutorService;
@@ -26,7 +26,7 @@ class AsyncEventPublisher implements EventPublisher {
 	@Override
 	// TODO double check if concurency is valid
 	public void publish(final Event event) {
-		isNotNull(event);
+		assertNotNull(event);
 		/*
 		 * It is not about many threads to be run. It is about avoid stopping
 		 * core application (also during subscriber side exception)

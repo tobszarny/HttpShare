@@ -1,4 +1,4 @@
-package pl.biltech.httpshare.view.util;
+package pl.biltech.httpshare.util;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,7 +8,7 @@ import java.io.StringWriter;
 import org.apache.commons.io.IOUtils;
 
 /**
- * @author tomek
+ * @author tomek, bilu
  * 
  */
 public class StreamUtil {
@@ -17,10 +17,8 @@ public class StreamUtil {
 			throws IOException {
 		byte[] bytes = new byte[4096];
 		int size;
-		int bytesWrote = 0;
 		while ((size = in.read(bytes)) != -1) {
 			out.write(bytes, 0, size);
-			bytesWrote += size;
 		}
 		out.flush();
 		out.close();

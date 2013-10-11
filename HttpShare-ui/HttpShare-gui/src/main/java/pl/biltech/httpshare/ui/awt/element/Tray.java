@@ -17,7 +17,7 @@ import pl.biltech.httpshare.event.EventManager;
 import pl.biltech.httpshare.event.EventSubscriber;
 import pl.biltech.httpshare.event.impl.AsyncEventManager;
 import pl.biltech.httpshare.event.impl.DownloadFinishedEvent;
-import pl.biltech.httpshare.event.impl.DownloadProgressEvent;
+import pl.biltech.httpshare.event.impl.DownloadProgressNotificationEvent;
 import pl.biltech.httpshare.event.impl.DownloadStartedEvent;
 import pl.biltech.httpshare.ui.awt.action.AddFileActionListener;
 import pl.biltech.httpshare.ui.awt.action.ExitActionListener;
@@ -75,9 +75,9 @@ public class Tray implements AddFileActionListener, ExitActionListener {
 				trayIcon.iconChangeAction(Icon.DEFAULT);
 			}
 		});
-		subscribers.add(new EventSubscriber<DownloadProgressEvent>() {
+		subscribers.add(new EventSubscriber<DownloadProgressNotificationEvent>() {
 			@Override
-			public void handleEvent(DownloadProgressEvent event) {
+			public void handleEvent(DownloadProgressNotificationEvent event) {
 				trayIcon.displayInfo("Download in progress", "" + getPercentAsTextProgressBar(event.getPercent()));
 			}
 		});
@@ -106,12 +106,12 @@ public class Tray implements AddFileActionListener, ExitActionListener {
 		return sb.toString();
 	}
 
-	public static void main(String[] args) {
-		Tray tray = new Tray();
-		for (int i = 0; i <= 100; i++) {
-			System.out.println(tray.getPercentAsTextProgressBar(i));
-		}
-	}
+//	public static void main(String[] args) {
+//		Tray tray = new Tray();
+//		for (int i = 0; i <= 100; i++) {
+//			System.out.println(tray.getPercentAsTextProgressBar(i));
+//		}
+//	}
 
 	@Override
 	public void exitAction() {

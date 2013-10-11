@@ -1,7 +1,7 @@
 package pl.biltech.httpshare.event.impl;
 
 
-import static pl.biltech.httpshare.util.Assert.isNotNull;
+import static pl.biltech.httpshare.util.Assert.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,14 +27,14 @@ public enum AsyncEventManager implements EventManager {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void addEventSubscriber(EventSubscriber subscriber) {
-		isNotNull(subscriber);
+		assertNotNull(subscriber);
 		subscribers.add(subscriber);
 	}
 
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void removeEventSubscriber(EventSubscriber subscriber) {
-		isNotNull(subscriber);
+		assertNotNull(subscriber);
 		subscribers.remove(subscriber);
 	}
 
@@ -47,7 +47,7 @@ public enum AsyncEventManager implements EventManager {
 
 	@Override
 	public void removeEventPublisher(EventPublisher eventPublisher) {
-		isNotNull(eventPublisher);
+		assertNotNull(eventPublisher);
 		publishers.remove(eventPublisher);
 	}
 

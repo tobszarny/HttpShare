@@ -1,4 +1,4 @@
-package pl.biltech.httpshare.view.util;
+package pl.biltech.httpshare.util;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -12,7 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * @author tomek
+ * @author tomek, bilu
  * 
  */
 public class NetworkUtilTest {

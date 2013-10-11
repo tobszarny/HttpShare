@@ -1,4 +1,4 @@
-package pl.biltech.httpshare.view.util;
+package pl.biltech.httpshare.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

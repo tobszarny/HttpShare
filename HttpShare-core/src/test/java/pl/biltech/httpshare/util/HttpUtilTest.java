@@ -1,4 +1,4 @@
-package pl.biltech.httpshare.view.util;
+package pl.biltech.httpshare.util;
 
 import java.io.InputStream;
 

@@ -1,7 +1,6 @@
-package pl.biltech.httpshare.server;
+package pl.biltech.httpshare.server.impl;
 
-import static java.lang.String.format;
-import static pl.biltech.httpshare.util.Assert.isNotNull;
+import static pl.biltech.httpshare.util.Assert.assertNotNull;
 
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -9,10 +8,7 @@ import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.Executors;
@@ -22,16 +18,12 @@ import org.slf4j.LoggerFactory;
 
 import pl.biltech.httpshare.annotation.VisibleForTesting;
 import pl.biltech.httpshare.event.EventPublisher;
-import pl.biltech.httpshare.event.impl.AsyncEventManager;
-import pl.biltech.httpshare.event.impl.DownloadFinishedEvent;
-import pl.biltech.httpshare.event.impl.DownloadStartedEvent;
 import pl.biltech.httpshare.event.impl.DownloadWaitingForRequestEvent;
-import pl.biltech.httpshare.view.util.NetworkUtil;
-import pl.biltech.httpshare.view.util.StreamUtil;
+import pl.biltech.httpshare.server.HttpShareServer;
+import pl.biltech.httpshare.server.support.HttpHandlerFactory;
+import pl.biltech.httpshare.server.support.StandardHttpHandlerFactory;
+import pl.biltech.httpshare.util.NetworkUtil;
 
-import com.sun.net.httpserver.Headers;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 /**
@@ -40,51 +32,32 @@ import com.sun.net.httpserver.HttpServer;
  * 
  * @author bilu
  */
-public class HttpShareServer {
+@SuppressWarnings("restriction")
+public class StandardHttpShareServer implements HttpShareServer {
 
-	private static final Logger logger = LoggerFactory.getLogger(HttpShareServer.class);
+	private static final Logger logger = LoggerFactory.getLogger(StandardHttpShareServer.class);
 
+	private static final int DEFAULT_START_PORT = 80;
 
-	private int port = 80;
-	private final boolean closeAfterFirstDownload = true;
+	private int port = DEFAULT_START_PORT;
 
-
+	private String url;
+	private HttpServer httpServer;
 	private NetworkUtil networkUtil;
 	private InetSocketAddress address;
 
-
 	private final EventPublisher eventPublisher;
+	private final HttpHandlerFactory httpHanderFactory;
 
-	public HttpShareServer() {
-		eventPublisher = AsyncEventManager.INSTANCE.createEventPublisher();
+	public StandardHttpShareServer(EventPublisher eventPublisher) {
+		this.eventPublisher = eventPublisher;
+		httpHanderFactory = new StandardHttpHandlerFactory(eventPublisher);
 	}
 
 	@VisibleForTesting
-	HttpShareServer(EventPublisher eventPublisher) {
+	StandardHttpShareServer(EventPublisher eventPublisher, HttpHandlerFactory httpHanderFactory) {
 		this.eventPublisher = eventPublisher;
-	}
-
-
-	public void start(File file) throws IOException {
-		networkUtil = new NetworkUtil();
-		port = networkUtil.findFirstFreePort(port);
-		address = new InetSocketAddress(port);
-
-		HttpServer server = HttpServer.create(address, 0);
-		server.createContext("/", getRedirectHttpHandler("/" + file.getName()));
-		server.createContext("/" + file.getName(), getDownloadFileHttpHandler(file, closeAfterFirstDownload));
-		server.setExecutor(Executors.newCachedThreadPool());
-		server.start();
-
-		String url = buildUrl(file);
-		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-		clipboard.setContents(new StringSelection(url), new ClipboardOwner() {
-			@Override
-			public void lostOwnership(Clipboard clipboard, Transferable contents) {
-				// wywolane w momencie gdy ktos nadpisze schowek
-			}
-		});
-		eventPublisher.publish(new DownloadWaitingForRequestEvent(url));
+		this.httpHanderFactory = httpHanderFactory;
 	}
 
 	private String buildUrl(File file) throws UnknownHostException {
@@ -96,78 +69,63 @@ public class HttpShareServer {
 		return urlBuilder.toString();
 	}
 
-	private HttpHandler getRedirectHttpHandler(final String redirectUrl) {
-		return new HttpHandler() {
-
-			@Override
-			public void handle(HttpExchange exchange) throws IOException {
-				exchange.getResponseHeaders().add("Location", redirectUrl);
-				exchange.sendResponseHeaders(307, 0);
-				exchange.getResponseBody().close();
-			}
-		};
-	}
-
-	private HttpHandler getDownloadFileHttpHandler(final File file, final boolean closeAfterFirstDownload) {
-		return new HttpHandler() {
-
-			@Override
-			public void handle(HttpExchange exchange) throws IOException {
-
-				String requestMethod = exchange.getRequestMethod();
-				if (requestMethod.equalsIgnoreCase("GET")) {
-					Headers responseHeaders = exchange.getResponseHeaders();
-					responseHeaders.set("Content-Type", "application/octet-stream");
-					responseHeaders.set("Content-Length", "" + file.length());
-					exchange.sendResponseHeaders(200, 0);
-
-					String message = format("Reciver %s [%s]", exchange.getRemoteAddress().getHostName(), exchange
-							.getRemoteAddress().getAddress().getHostAddress());
-					eventPublisher.publish(new DownloadStartedEvent(message));
-
-					OutputStream out = exchange.getResponseBody();
-					InputStream in = new FileInputStream(file);
-					StreamUtil.copyStream(in, out);
-
-					// TODO incorporate in copy mechanism
-					// eventPublisher.publish(new DownloadProgressEvent(32));
-
-					eventPublisher.publish(new DownloadFinishedEvent(message));
-				}
-			}
-		};
-	}
-
-	public boolean isStarted() {
-		logger.error("Not yet implemented");
-		return false;
-	}
-
+	@Override
 	public void stop() {
-		logger.error("Not yet implemented");
+		assertNotNull(httpServer);
+		httpServer.stop(0);
+		cleanup();
 	}
 
-	public void setUploadDirectory(File directory) {
-		logger.error("Not yet implemented");
+	private void cleanup() {
+		httpServer = null;
+		address = null;
+		port = DEFAULT_START_PORT;
+		url = null;
+
 	}
 
-	public void addFileToDownload(File file) {
-		isNotNull(file);
+	@Override
+	public void addFileToDownload(File file) throws IOException {
+		assertNotNull(file);
+		assertNotNull(httpServer);
 		logger.debug("Adding file to download: {}", file.getAbsolutePath());
-		logger.error("Not yet implemented");
+
+		String relativeDownloadPath = "/" + file.getName();
+		httpServer.createContext("/", httpHanderFactory.createRedirectHttpHandler(relativeDownloadPath));
+		httpServer.createContext(relativeDownloadPath, httpHanderFactory.createDownloadHttpHandler(file));
+
+		url = buildUrl(file);
+		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		clipboard.setContents(new StringSelection(url), new ClipboardOwner() {
+			@Override
+			public void lostOwnership(Clipboard clipboard, Transferable contents) {
+				// wywolane w momencie gdy ktos nadpisze schowek
+			}
+		});
+		eventPublisher.publish(new DownloadWaitingForRequestEvent(url));
 	}
 
-	public String getDownloadUrl() {
-		logger.error("Not yet implemented");
-		return "Not yet implemented";
+	@Override
+	public void start() throws IOException {
+		networkUtil = new NetworkUtil();
+		port = networkUtil.findFirstFreePort(port);
+		address = new InetSocketAddress(port);
+		httpServer = HttpServer.create(address, 0);
+		httpServer.setExecutor(Executors.newCachedThreadPool());
+		httpServer.start();
+
 	}
 
-	public void enableExitAfterDownload() {
-		logger.error("Not yet implemented");
+	@Override
+	public boolean isServerRunning() {
+		// FIXME quite naive verification
+		return httpServer != null;
 	}
 
-	public void disableExitAfterDownload() {
-		logger.error("Not yet implemented");
+	@Override
+	public String getFileToDownloadUrl() {
+		assertNotNull(httpServer);
+		return url;
 	}
 
 }

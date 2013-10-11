@@ -1,4 +1,4 @@
-package pl.biltech.httpshare.view.util;
+package pl.biltech.httpshare.util;
 
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -6,6 +6,8 @@ import java.io.StringWriter;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
+
+import pl.biltech.httpshare.util.StreamUtil;
 
 /**
  * @author tomek

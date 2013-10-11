@@ -1,6 +1,6 @@
-package pl.biltech.httpshare.view.util;
+package pl.biltech.httpshare.util;
 
-import static pl.biltech.httpshare.util.Assert.isTrue;
+import static pl.biltech.httpshare.util.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -25,8 +25,8 @@ public class NetworkUtil {
 	}
 
 	public int findFirstFreePort(int startFrom) {
-		isTrue(startFrom > 0);
-		isTrue(startFrom < 65535);
+		assertTrue(startFrom > 0);
+		assertTrue(startFrom < 65535);
 
 		logger.debug("findFirstFreePort called for: {}", startFrom);
 		try {

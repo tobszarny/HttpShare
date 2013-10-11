@@ -9,13 +9,13 @@ import pl.biltech.httpshare.util.Assert;
  * @author bilu
  * 
  */
-public class DownloadProgressEvent implements Event {
+public class DownloadProgressNotificationEvent implements Event {
 
 	int percent;
 
-	public DownloadProgressEvent(int percent) {
-		Assert.isTrue(percent >= 0, "Download percent can't be less than 0");
-		Assert.isTrue(percent <= 100, "Download percent can't be more than 100");
+	public DownloadProgressNotificationEvent(int percent) {
+		Assert.assertTrue(percent >= 0, "Download percent can't be less than 0");
+		Assert.assertTrue(percent <= 100, "Download percent can't be more than 100");
 		this.percent = percent;
 	}
 

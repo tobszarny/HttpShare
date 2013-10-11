@@ -1,6 +1,6 @@
 package pl.biltech.httpshare;
 
-import static pl.biltech.httpshare.util.Assert.isNotNull;
+import static pl.biltech.httpshare.util.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,7 +8,11 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import pl.biltech.httpshare.server.HttpShareServer;
+import pl.biltech.httpshare.event.EventPublisher;
+import pl.biltech.httpshare.event.impl.AsyncEventManager;
+import pl.biltech.httpshare.exception.ExceptionHandler;
+import pl.biltech.httpshare.exception.impl.StandardExceptionHandler;
+import pl.biltech.httpshare.server.impl.StandardHttpShareServer;
 
 /**
  * Facade for core functionalities
@@ -19,48 +23,39 @@ import pl.biltech.httpshare.server.HttpShareServer;
 public class HttpShare {
 
 	private static final Logger logger = LoggerFactory.getLogger(HttpShare.class);
-	private HttpShareServer httpShareServer;
+	private final EventPublisher eventPublisher = AsyncEventManager.INSTANCE.createEventPublisher();
+	private final ExceptionHandler exceptionHandler = new StandardExceptionHandler(logger, eventPublisher);
+	private StandardHttpShareServer httpShareServer;
 
 	public void start() {
-		httpShareServer = new HttpShareServer();
-
+		try {
+			httpShareServer = new StandardHttpShareServer(eventPublisher);
+			httpShareServer.start();
+		} catch (IOException e) {
+			exceptionHandler.handle("Error during HttpShareServer startup", e);
+		}
 	}
 
 	public boolean isStarted() {
-		logger.error("Not yet implemented");
-		return false;
+		return httpShareServer != null && httpShareServer.isServerRunning();
 	}
 
 	public void stop() {
-		logger.error("Not yet implemented");
-	}
-
-	public void setUploadDirectory(File directory) {
-		logger.error("Not yet implemented");
+		httpShareServer.stop();
 	}
 
 	public void addFileToDownload(File file) {
-		isNotNull(file);
+		assertNotNull(file);
 		logger.debug("Adding file to download: {}", file.getAbsolutePath());
 		try {
-			httpShareServer.start(file);
+			httpShareServer.addFileToDownload(file);
 		} catch (IOException e) {
-			logger.error("Error during file upload", e);
+			exceptionHandler.handle("Error during file upload", e);
 		}
 	}
 
 	public String getDownloadUrl() {
-		logger.error("Not yet implemented");
-		return "Not yet implemented";
+		return httpShareServer.getFileToDownloadUrl();
 	}
-
-	public void enableExitAfterDownload() {
-		logger.error("Not yet implemented");
-	}
-
-	public void disableExitAfterDownload() {
-		logger.error("Not yet implemented");
-	}
-
 
 }

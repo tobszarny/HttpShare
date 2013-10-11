@@ -57,7 +57,7 @@ public class AsyncEventManagerTest {
 	public void shouldOnlyOneSubscriberReceiveTheEvent() throws Exception {
 		// given
 		EventSubscriber<DownloadStartedEvent> dse1 = createDownloadStaEventSubscriber();
-		EventSubscriber<DownloadProgressEvent> dse2 = createDownloadProgressEventSubscriber();
+		EventSubscriber<DownloadProgressNotificationEvent> dse2 = createDownloadProgressEventSubscriber();
 		eventManager.addEventSubscriber(dse1);
 		eventManager.addEventSubscriber(dse2);
 		DownloadStartedEvent eventToPush = new DownloadStartedEvent("test message");
@@ -76,11 +76,11 @@ public class AsyncEventManagerTest {
 	public void shouldEachSubscriberReceiveCorrespondingEvent() throws Exception {
 		// given
 		EventSubscriber<DownloadStartedEvent> dse1 = createDownloadStaEventSubscriber();
-		EventSubscriber<DownloadProgressEvent> dse2 = createDownloadProgressEventSubscriber();
+		EventSubscriber<DownloadProgressNotificationEvent> dse2 = createDownloadProgressEventSubscriber();
 		eventManager.addEventSubscriber(dse1);
 		eventManager.addEventSubscriber(dse2);
 		DownloadStartedEvent downloadStartedEvent = new DownloadStartedEvent("test message");
-		DownloadProgressEvent downloadProgressEvent = new DownloadProgressEvent(44);
+		DownloadProgressNotificationEvent downloadProgressEvent = new DownloadProgressNotificationEvent(44);
 
 		// when
 		eventPublisher.publish(downloadStartedEvent);
@@ -103,10 +103,10 @@ public class AsyncEventManagerTest {
 		return subscriber;
 	}
 
-	private EventSubscriber<DownloadProgressEvent> createDownloadProgressEventSubscriber() {
-		EventSubscriber<DownloadProgressEvent> subscriber = new EventSubscriber<DownloadProgressEvent>() {
+	private EventSubscriber<DownloadProgressNotificationEvent> createDownloadProgressEventSubscriber() {
+		EventSubscriber<DownloadProgressNotificationEvent> subscriber = new EventSubscriber<DownloadProgressNotificationEvent>() {
 			@Override
-			public void handleEvent(DownloadProgressEvent event) {
+			public void handleEvent(DownloadProgressNotificationEvent event) {
 				handledEvents.put(this, event);
 			}
 		};

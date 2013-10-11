@@ -9,7 +9,6 @@ import pl.biltech.httpshare.ui.awt.element.Tray;
 public class Startup {
 
 	public static void main(final String[] args) {
-		System.out.println("in");
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
