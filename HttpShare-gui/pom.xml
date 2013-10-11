@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>pl.biltech</groupId>
-		<artifactId>HttpShare-ui</artifactId>
+		<artifactId>HttpShare</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>HttpShare-gui</artifactId>
@@ -37,5 +37,13 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>pl.biltech</groupId>
+			<artifactId>HttpShare-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	</dependencies>
 
 </project>

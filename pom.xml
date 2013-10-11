@@ -8,7 +8,7 @@
 
 	<modules>
 		<module>HttpShare-core</module>
-		<module>HttpShare-ui</module>
+		<module>HttpShare-gui</module>
 	</modules>
 
 	<!-- More Project Information -->
