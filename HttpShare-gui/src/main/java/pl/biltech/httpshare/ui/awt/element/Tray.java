@@ -19,6 +19,7 @@ import pl.biltech.httpshare.event.impl.AsyncEventManager;
 import pl.biltech.httpshare.event.impl.DownloadFinishedEvent;
 import pl.biltech.httpshare.event.impl.DownloadProgressNotificationEvent;
 import pl.biltech.httpshare.event.impl.DownloadStartedEvent;
+import pl.biltech.httpshare.event.impl.DownloadWaitingForRequestEvent;
 import pl.biltech.httpshare.ui.awt.action.AddFileActionListener;
 import pl.biltech.httpshare.ui.awt.action.ExitActionListener;
 
@@ -79,6 +80,13 @@ public class Tray implements AddFileActionListener, ExitActionListener {
 			@Override
 			public void handleEvent(DownloadProgressNotificationEvent event) {
 				trayIcon.displayInfo("Download in progress", "" + getPercentAsTextProgressBar(event.getPercent()));
+			}
+		});
+		subscribers.add(new EventSubscriber<DownloadWaitingForRequestEvent>() {
+
+			@Override
+			public void handleEvent(DownloadWaitingForRequestEvent event) {
+				trayIcon.displayInfo("File ready to download", "Download url: " + event.getUrl());
 			}
 		});
 		return subscribers;
