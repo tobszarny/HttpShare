@@ -3,9 +3,6 @@ package pl.biltech.httpshare.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.StringWriter;
-
-import org.apache.commons.io.IOUtils;
 
 /**
  * @author tomek, bilu
@@ -29,9 +26,4 @@ public class StreamUtil {
 		return ClassLoader.class.getResourceAsStream(file);
 	}
 
-	public static String readAll(InputStream inputStream) throws IOException {
-		StringWriter writer = new StringWriter();
-		IOUtils.copy(inputStream, writer, "utf-8");
-		return writer.toString();
-	}
 }
