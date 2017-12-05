@@ -1,6 +1,5 @@
 package pl.biltech.httpshare.server.impl;
 
-import com.sun.net.httpserver.HttpServer;
 import fi.iki.elonen.NanoHTTPD;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,11 +17,15 @@ import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
+import java.util.concurrent.Executors;
 
+import static fi.iki.elonen.NanoHTTPD.newFixedLengthResponse;
 import static pl.biltech.httpshare.util.Assert.assertNotNull;
 
 /**
@@ -34,11 +37,11 @@ public class NanoHttpShareServer implements HttpShareServer {
     private static final Logger logger = LoggerFactory.getLogger(NanoHttpShareServer.class);
 
     private static final int DEFAULT_START_PORT = 80;
+    public static final int N_THREADS = 10;
 
     private int port = DEFAULT_START_PORT;
 
     private String url;
-    private HttpServer httpServer;
     private NetworkUtil networkUtil;
     private InetSocketAddress address;
 
@@ -70,13 +73,13 @@ public class NanoHttpShareServer implements HttpShareServer {
 
     @Override
     public void stop() {
-        assertNotNull(httpServer);
-        httpServer.stop(0);
+        assertNotNull(nanoHTTPD);
+        nanoHTTPD.stop();
         cleanup();
     }
 
     private void cleanup() {
-        httpServer = null;
+        nanoHTTPD = null;
         address = null;
         port = DEFAULT_START_PORT;
         url = null;
@@ -86,12 +89,12 @@ public class NanoHttpShareServer implements HttpShareServer {
     @Override
     public void addFileToDownload(File file) throws IOException {
         assertNotNull(file);
-        assertNotNull(httpServer);
+        assertNotNull(nanoHTTPD);
         logger.debug("Adding file to download: {}", file.getAbsolutePath());
 
         String relativeDownloadPath = "/" + file.getName();
-        httpServer.createContext("/", httpHanderFactory.createRedirectHttpHandler(relativeDownloadPath));
-        httpServer.createContext(relativeDownloadPath, httpHanderFactory.createDownloadHttpHandler(file));
+//        httpServer.createContext("/", httpHanderFactory.createRedirectHttpHandler(relativeDownloadPath));
+//        httpServer.createContext(relativeDownloadPath, httpHanderFactory.createDownloadHttpHandler(file));
 
         url = buildUrl(file);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -113,8 +116,11 @@ public class NanoHttpShareServer implements HttpShareServer {
         nanoHTTPD = new NanoHTTPD(localHostName, port) {
             @Override
             public Response serve(IHTTPSession session) {
-                String msg = "<html><body><h1>Hello server</h1>\n";
+                Method method = session.getMethod();
+                String uri = session.getUri();
                 Map<String, String> parms = session.getParms();
+
+                String msg = "<html><body><h1>Hello server</h1>\n";
                 if (parms.get("username") == null) {
                     msg += "<form action='?' method='get'>\n  <p>Your name: <input type='text' name='username'></p>\n" + "</form>\n";
                 } else {
@@ -123,6 +129,8 @@ public class NanoHttpShareServer implements HttpShareServer {
                 return newFixedLengthResponse(msg + "</body></html>\n");
             }
         };
+
+        nanoHTTPD.setAsyncRunner(new BoundRunner(Executors.newFixedThreadPool(N_THREADS)));
 
         nanoHTTPD.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
         logger.info("Running! Point your browsers to http://" + localHostName + ":" + port + "/ \n");
@@ -135,15 +143,23 @@ public class NanoHttpShareServer implements HttpShareServer {
 
     }
 
+    private NanoHTTPD.Response downloadFile(File file) {
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(file);
+        } catch (FileNotFoundException ex) {
+        }
+        return newFixedLengthResponse(NanoHTTPD.Response.Status.OK, "application/octet-stream", fis, file.getTotalSpace());
+    }
+
     @Override
     public boolean isServerRunning() {
-        // FIXME quite naive verification
-        return httpServer != null;
+        return nanoHTTPD != null && nanoHTTPD.isAlive();
     }
 
     @Override
     public String getFileToDownloadUrl() {
-        assertNotNull(httpServer);
+        assertNotNull(nanoHTTPD);
         return url;
     }
 

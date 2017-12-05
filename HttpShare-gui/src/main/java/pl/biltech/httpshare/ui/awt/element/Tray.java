@@ -18,97 +18,81 @@ import java.util.List;
 
 /**
  * @author bilu
- * 
  */
 public class Tray implements AddFileActionListener, ExitActionListener {
 
-	private static final Logger logger = LoggerFactory.getLogger(Tray.class);
+    private static final Logger logger = LoggerFactory.getLogger(Tray.class);
 
-	private SystemTray systemTray;
-	private TrayIcon trayIcon;
-	private final HttpShare httpShare = new HttpShare();
-	private final EventManager eventManager = AsyncEventManager.INSTANCE;
-	
-	public Tray() {
-		if (!SystemTray.isSupported()) {
-			String message = "SystemTray is not supported";
-			logger.error(message);
-			JOptionPane.showMessageDialog(null, message);
-			return;
-		}
-		systemTray = SystemTray.getSystemTray();
-		PopupMenu popupMenu = new PopupMenu(this, this);
-		trayIcon = new TrayIcon(popupMenu);
-		
-		try {
-			systemTray.add(trayIcon);
-		} catch (AWTException e) {
-			JOptionPane.showMessageDialog(null, "TrayIcon could not be added.");
-			return;
-		}
+    private SystemTray systemTray;
+    private TrayIcon trayIcon;
+    private final HttpShare httpShare = new HttpShare();
+    private final EventManager eventManager = AsyncEventManager.INSTANCE;
 
-		httpShare.start();
+    public Tray() {
+        if (!SystemTray.isSupported()) {
+            String message = "SystemTray is not supported";
+            logger.error(message);
+            JOptionPane.showMessageDialog(null, message);
+            return;
+        }
+        systemTray = SystemTray.getSystemTray();
+        PopupMenu popupMenu = new PopupMenu(this, this);
+        trayIcon = new TrayIcon(popupMenu);
 
-		trayIcon.displayInfo("HttpShare", "Application started");
+        try {
+            systemTray.add(trayIcon);
+        } catch (AWTException e) {
+            JOptionPane.showMessageDialog(null, "TrayIcon could not be added.");
+            return;
+        }
 
-		for (EventSubscriber<? extends Event> eventSubscriber : createEventSubscribers()) {
-			eventManager.addEventSubscriber(eventSubscriber);
-		}
-	}
+        httpShare.start();
 
-	private List<EventSubscriber<? extends Event>> createEventSubscribers() {
-		List<EventSubscriber<? extends Event>> subscribers = new ArrayList<EventSubscriber<? extends Event>>();
-		subscribers.add(new EventSubscriber<DownloadStartedEvent>() {
-			@Override
-			public void handleEvent(DownloadStartedEvent event) {
-				trayIcon.displayInfo("Download started", event.getMessage());
-				trayIcon.iconChangeAction(Icon.DOWNLOADING);
-			}
-		});
-		subscribers.add(new EventSubscriber<DownloadFinishedEvent>() {
-			@Override
-			public void handleEvent(DownloadFinishedEvent event) {
-				trayIcon.displayInfo("Download finished", event.getMessage());
-				trayIcon.iconChangeAction(Icon.DEFAULT);
-			}
-		});
-		subscribers.add(new EventSubscriber<DownloadProgressNotificationEvent>() {
-			@Override
-			public void handleEvent(DownloadProgressNotificationEvent event) {
-				trayIcon.displayInfo("Download in progress", "" + getPercentAsTextProgressBar(event.getPercent()));
-			}
-		});
-		subscribers.add(new EventSubscriber<DownloadWaitingForRequestEvent>() {
+        trayIcon.displayInfo("HttpShare", "Application started");
 
-			@Override
-			public void handleEvent(DownloadWaitingForRequestEvent event) {
-				trayIcon.displayInfo("File ready to download", "Download url: " + event.getUrl());
-			}
-		});
-		return subscribers;
-	}
+        for (EventSubscriber<? extends Event> eventSubscriber : createEventSubscribers()) {
+            eventManager.addEventSubscriber(eventSubscriber);
+        }
+    }
 
-	/**
-	 * @param percent
-	 * @return String with simple progress bar, sample for 88
-	 * 
-	 *         <pre>
-	 * [||||||||||||||||||||||||||||||||||||||||||||      ] 88%
-	 * </pre>
-	 */
-	private String getPercentAsTextProgressBar(int percent) {
-		int maxChar = percent / 2;
-		StringBuilder sb = new StringBuilder("[");
-		for (int i = 1; i <= 50; i++) {
-			if (i <= maxChar) {
-				sb.append("|");
-			} else {
-				sb.append(" ");
-			}
-		}
-		sb.append("] ").append(percent).append("%");
-		return sb.toString();
-	}
+    private List<EventSubscriber<? extends Event>> createEventSubscribers() {
+        List<EventSubscriber<? extends Event>> subscribers = new ArrayList<EventSubscriber<? extends Event>>();
+        subscribers.add((EventSubscriber<DownloadStartedEvent>) event -> {
+            trayIcon.displayInfo("Download started", event.getMessage());
+            trayIcon.iconChangeAction(Icon.DOWNLOADING);
+        });
+        subscribers.add((EventSubscriber<DownloadFinishedEvent>) event -> {
+            trayIcon.displayInfo("Download finished", event.getMessage());
+            trayIcon.iconChangeAction(Icon.DEFAULT);
+        });
+        subscribers.add((EventSubscriber<DownloadProgressNotificationEvent>) event ->
+                trayIcon.displayInfo("Download in progress", "" + getPercentAsTextProgressBar(event.getPercent())));
+        subscribers.add((EventSubscriber<DownloadWaitingForRequestEvent>) event ->
+                trayIcon.displayInfo("File ready to download", "Download url: " + event.getUrl()));
+        return subscribers;
+    }
+
+    /**
+     * @param percent
+     * @return String with simple progress bar, sample for 88
+     * <p>
+     * <pre>
+     * [||||||||||||||||||||||||||||||||||||||||||||      ] 88%
+     * </pre>
+     */
+    private String getPercentAsTextProgressBar(int percent) {
+        int maxChar = percent / 2;
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 1; i <= 50; i++) {
+            if (i <= maxChar) {
+                sb.append("|");
+            } else {
+                sb.append(" ");
+            }
+        }
+        sb.append("] ").append(percent).append("%");
+        return sb.toString();
+    }
 
 //	public static void main(String[] args) {
 //		Tray tray = new Tray();
@@ -117,18 +101,18 @@ public class Tray implements AddFileActionListener, ExitActionListener {
 //		}
 //	}
 
-	@Override
-	public void exitAction() {
-		systemTray.remove(trayIcon);
-		System.exit(0);
-	}
+    @Override
+    public void exitAction() {
+        systemTray.remove(trayIcon);
+        System.exit(0);
+    }
 
-	@Override
-	public void addFileAction(File file) {
-		if (!httpShare.isStarted()) {
-			httpShare.start();
-		}
-		httpShare.addFileToDownload(file);
-	}
-	
+    @Override
+    public void addFileAction(File file) {
+        if (!httpShare.isStarted()) {
+            httpShare.start();
+        }
+        httpShare.addFileToDownload(file);
+    }
+
 }
