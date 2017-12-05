@@ -1,18 +1,19 @@
 package pl.biltech.httpshare;
 
-import static pl.biltech.httpshare.util.Assert.assertNotNull;
-
-import java.io.File;
-import java.io.IOException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import pl.biltech.httpshare.event.EventPublisher;
 import pl.biltech.httpshare.event.impl.AsyncEventManager;
 import pl.biltech.httpshare.exception.ExceptionHandler;
 import pl.biltech.httpshare.exception.impl.StandardExceptionHandler;
+import pl.biltech.httpshare.server.HttpShareServer;
+import pl.biltech.httpshare.server.impl.NanoHttpShareServer;
 import pl.biltech.httpshare.server.impl.StandardHttpShareServer;
+
+import java.io.File;
+import java.io.IOException;
+
+import static pl.biltech.httpshare.util.Assert.assertNotNull;
 
 /**
  * Facade for core functionalities
@@ -25,11 +26,12 @@ public class HttpShare {
 	private static final Logger logger = LoggerFactory.getLogger(HttpShare.class);
 	private final EventPublisher eventPublisher = AsyncEventManager.INSTANCE.createEventPublisher();
 	private final ExceptionHandler exceptionHandler = new StandardExceptionHandler(logger, eventPublisher);
-	private StandardHttpShareServer httpShareServer;
+	private HttpShareServer httpShareServer;
 
 	public void start() {
 		try {
 			httpShareServer = new StandardHttpShareServer(eventPublisher);
+			httpShareServer = new NanoHttpShareServer(eventPublisher);
 			httpShareServer.start();
 		} catch (IOException e) {
 			exceptionHandler.handle("Error during HttpShareServer startup", e);

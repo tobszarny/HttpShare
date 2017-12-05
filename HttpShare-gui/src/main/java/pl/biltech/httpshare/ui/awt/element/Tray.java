@@ -1,27 +1,20 @@
 package pl.biltech.httpshare.ui.awt.element;
 
-import java.awt.AWTException;
-import java.awt.SystemTray;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.JOptionPane;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import pl.biltech.httpshare.HttpShare;
 import pl.biltech.httpshare.event.Event;
 import pl.biltech.httpshare.event.EventManager;
 import pl.biltech.httpshare.event.EventSubscriber;
-import pl.biltech.httpshare.event.impl.AsyncEventManager;
-import pl.biltech.httpshare.event.impl.DownloadFinishedEvent;
-import pl.biltech.httpshare.event.impl.DownloadProgressNotificationEvent;
-import pl.biltech.httpshare.event.impl.DownloadStartedEvent;
-import pl.biltech.httpshare.event.impl.DownloadWaitingForRequestEvent;
+import pl.biltech.httpshare.event.impl.*;
 import pl.biltech.httpshare.ui.awt.action.AddFileActionListener;
 import pl.biltech.httpshare.ui.awt.action.ExitActionListener;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author bilu
@@ -53,6 +46,9 @@ public class Tray implements AddFileActionListener, ExitActionListener {
 			JOptionPane.showMessageDialog(null, "TrayIcon could not be added.");
 			return;
 		}
+
+		httpShare.start();
+
 		trayIcon.displayInfo("HttpShare", "Application started");
 
 		for (EventSubscriber<? extends Event> eventSubscriber : createEventSubscribers()) {
