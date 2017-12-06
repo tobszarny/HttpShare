@@ -11,6 +11,7 @@ import static fi.iki.elonen.NanoHTTPD.Response;
 import static fi.iki.elonen.NanoHTTPD.newFixedLengthResponse;
 
 public class NanoHttpHandlerFactory implements HttpHandlerFactory<Response> {
+    private static final String TEXT_HTML = "text/html";
     private final EventPublisher eventPublisher;
 
     public NanoHttpHandlerFactory(EventPublisher eventPublisher) {
@@ -19,7 +20,9 @@ public class NanoHttpHandlerFactory implements HttpHandlerFactory<Response> {
 
     @Override
     public Response createRedirectHttpHandler(String redirectUrl) {
-        return null;
+        Response r = newFixedLengthResponse(Response.Status.REDIRECT, TEXT_HTML, "");
+        r.addHeader("Location", redirectUrl);
+        return r;
     }
 
     @Override

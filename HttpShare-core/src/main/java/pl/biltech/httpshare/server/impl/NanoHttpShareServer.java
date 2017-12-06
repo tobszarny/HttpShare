@@ -118,12 +118,17 @@ public class NanoHttpShareServer implements HttpShareServer {
                 String uri = session.getUri();
                 Map<String, String> parms = session.getParms();
                 Map<String, String> headers = session.getHeaders();
-                if (uri.length() > 1) {
+
+                if ("/".equals(uri)) {
+
+                } else if (uri.length() > 1) {
                     String[] split = uri.split("/");
                     String fileName = split[split.length - 1];
                     logger.info(fileName);
                     if ("favicon.ico".equalsIgnoreCase(fileName)) {
                         return getFavicon();
+                    } else {
+                        return serveFolder("dist", fileName);
                     }
 
                 }
@@ -140,6 +145,12 @@ public class NanoHttpShareServer implements HttpShareServer {
             private Response getFavicon() {
                 ClassLoader classLoader = getClass().getClassLoader();
                 File file = new File(classLoader.getResource("images/ico.png").getFile());
+                return httpHanderFactory.createDownloadHttpHandler(file, "image/png");
+            }
+
+            private Response serveFolder(String folder, String fileName) {
+                ClassLoader classLoader = getClass().getClassLoader();
+                File file = new File(classLoader.getResource(folder + "/" + fileName).getFile());
                 return httpHanderFactory.createDownloadHttpHandler(file, "image/png");
             }
         };
