@@ -1,8 +1,18 @@
 package pl.biltech.httpshare.server.impl;
 
-import static pl.biltech.httpshare.util.Assert.assertNotNull;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import pl.biltech.httpshare.annotation.VisibleForTesting;
+import pl.biltech.httpshare.event.EventPublisher;
+import pl.biltech.httpshare.event.impl.DownloadWaitingForRequestEvent;
+import pl.biltech.httpshare.server.HttpShareServer;
+import pl.biltech.httpshare.server.support.HttpHandlerFactory;
+import pl.biltech.httpshare.server.support.impl.StandardHttpHandlerFactory;
+import pl.biltech.httpshare.util.NetworkUtil;
 
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.StringSelection;
@@ -13,18 +23,7 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.Executors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import pl.biltech.httpshare.annotation.VisibleForTesting;
-import pl.biltech.httpshare.event.EventPublisher;
-import pl.biltech.httpshare.event.impl.DownloadWaitingForRequestEvent;
-import pl.biltech.httpshare.server.HttpShareServer;
-import pl.biltech.httpshare.server.support.HttpHandlerFactory;
-import pl.biltech.httpshare.server.support.impl.StandardHttpHandlerFactory;
-import pl.biltech.httpshare.util.NetworkUtil;
-
-import com.sun.net.httpserver.HttpServer;
+import static pl.biltech.httpshare.util.Assert.assertNotNull;
 
 /**
  * 
@@ -47,7 +46,7 @@ public class StandardHttpShareServer implements HttpShareServer {
 	private InetSocketAddress address;
 
 	private final EventPublisher eventPublisher;
-	private final HttpHandlerFactory httpHanderFactory;
+	private final HttpHandlerFactory<HttpHandler> httpHanderFactory;
 
 	public StandardHttpShareServer(EventPublisher eventPublisher) {
 		this.eventPublisher = eventPublisher;

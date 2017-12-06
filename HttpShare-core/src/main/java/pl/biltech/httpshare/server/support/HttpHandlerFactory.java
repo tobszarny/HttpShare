@@ -2,13 +2,15 @@ package pl.biltech.httpshare.server.support;
 
 import java.io.File;
 
-import com.sun.net.httpserver.HttpHandler;
-
 @SuppressWarnings("restriction")
-public interface HttpHandlerFactory {
+public interface HttpHandlerFactory<R> {
 
-	HttpHandler createRedirectHttpHandler(String redirectUrl);
+	String APPLICATION_OCTET_STREAM = "application/octet-stream";
 
-	HttpHandler createDownloadHttpHandler(File file);
+	R createRedirectHttpHandler(String redirectUrl);
+
+	R createDownloadHttpHandler(File file);
+
+	R createDownloadHttpHandler(File file, String mime);
 
 }

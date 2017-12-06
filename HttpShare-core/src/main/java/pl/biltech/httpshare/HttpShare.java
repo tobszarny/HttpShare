@@ -8,7 +8,6 @@ import pl.biltech.httpshare.exception.ExceptionHandler;
 import pl.biltech.httpshare.exception.impl.StandardExceptionHandler;
 import pl.biltech.httpshare.server.HttpShareServer;
 import pl.biltech.httpshare.server.impl.NanoHttpShareServer;
-import pl.biltech.httpshare.server.impl.StandardHttpShareServer;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +29,7 @@ public class HttpShare {
 
 	public void start() {
 		try {
-			httpShareServer = new StandardHttpShareServer(eventPublisher);
+//			httpShareServer = new StandardHttpShareServer(eventPublisher);
 			httpShareServer = new NanoHttpShareServer(eventPublisher);
 			httpShareServer.start();
 		} catch (IOException e) {

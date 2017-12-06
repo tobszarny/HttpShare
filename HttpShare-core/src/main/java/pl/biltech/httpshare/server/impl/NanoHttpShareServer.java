@@ -1,6 +1,7 @@
 package pl.biltech.httpshare.server.impl;
 
 import fi.iki.elonen.NanoHTTPD;
+import fi.iki.elonen.NanoHTTPD.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.biltech.httpshare.annotation.VisibleForTesting;
@@ -8,7 +9,7 @@ import pl.biltech.httpshare.event.EventPublisher;
 import pl.biltech.httpshare.event.impl.DownloadWaitingForRequestEvent;
 import pl.biltech.httpshare.server.HttpShareServer;
 import pl.biltech.httpshare.server.support.HttpHandlerFactory;
-import pl.biltech.httpshare.server.support.impl.StandardHttpHandlerFactory;
+import pl.biltech.httpshare.server.support.impl.NanoHttpHandlerFactory;
 import pl.biltech.httpshare.util.NetworkUtil;
 
 import java.awt.*;
@@ -17,15 +18,12 @@ import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
-import static fi.iki.elonen.NanoHTTPD.newFixedLengthResponse;
 import static pl.biltech.httpshare.util.Assert.assertNotNull;
 
 /**
@@ -46,14 +44,14 @@ public class NanoHttpShareServer implements HttpShareServer {
     private InetSocketAddress address;
 
     private final EventPublisher eventPublisher;
-    private final HttpHandlerFactory httpHanderFactory;
+    private final HttpHandlerFactory<Response> httpHanderFactory;
 
     private NanoHTTPD nanoHTTPD;
 
 
     public NanoHttpShareServer(EventPublisher eventPublisher) {
         this.eventPublisher = eventPublisher;
-        httpHanderFactory = new StandardHttpHandlerFactory(eventPublisher);
+        httpHanderFactory = new NanoHttpHandlerFactory(eventPublisher);
     }
 
     @VisibleForTesting
@@ -119,7 +117,16 @@ public class NanoHttpShareServer implements HttpShareServer {
                 Method method = session.getMethod();
                 String uri = session.getUri();
                 Map<String, String> parms = session.getParms();
+                Map<String, String> headers = session.getHeaders();
+                if (uri.length() > 1) {
+                    String[] split = uri.split("/");
+                    String fileName = split[split.length - 1];
+                    logger.info(fileName);
+                    if ("favicon.ico".equalsIgnoreCase(fileName)) {
+                        return getFavicon();
+                    }
 
+                }
                 String msg = "<html><body><h1>Hello server</h1>\n";
                 if (parms.get("username") == null) {
                     msg += "<form action='?' method='get'>\n  <p>Your name: <input type='text' name='username'></p>\n" + "</form>\n";
@@ -127,6 +134,13 @@ public class NanoHttpShareServer implements HttpShareServer {
                     msg += "<p>Hello, " + parms.get("username") + "!</p>";
                 }
                 return newFixedLengthResponse(msg + "</body></html>\n");
+
+            }
+
+            private Response getFavicon() {
+                ClassLoader classLoader = getClass().getClassLoader();
+                File file = new File(classLoader.getResource("images/ico.png").getFile());
+                return httpHanderFactory.createDownloadHttpHandler(file, "image/png");
             }
         };
 
@@ -135,21 +149,6 @@ public class NanoHttpShareServer implements HttpShareServer {
         nanoHTTPD.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
         logger.info("Running! Point your browsers to http://" + localHostName + ":" + port + "/ \n");
 
-
-//        address = new InetSocketAddress(port);
-//        httpServer = HttpServer.create(address, 0);
-//        httpServer.setExecutor(Executors.newCachedThreadPool());
-//        httpServer.start();
-
-    }
-
-    private NanoHTTPD.Response downloadFile(File file) {
-        FileInputStream fis = null;
-        try {
-            fis = new FileInputStream(file);
-        } catch (FileNotFoundException ex) {
-        }
-        return newFixedLengthResponse(NanoHTTPD.Response.Status.OK, "application/octet-stream", fis, file.getTotalSpace());
     }
 
     @Override
