@@ -117,13 +117,17 @@ public class NanoHttpShareServer implements HttpShareServer {
                 if ("/".equals(uri)) {
                     return httpHanderFactory.createRedirectHttpHandler("/index.html");
                 } else if (uri.length() > 1) {
-                    String[] split = uri.split("/");
-                    String fileName = split[split.length - 1];
-                    logger.info(fileName);
-                    if ("favicon.ico".equalsIgnoreCase(fileName)) {
-                        return getFavicon();
+                    if (uri.startsWith("/api")) {
+
                     } else {
-                        return serveFolder("dist", fileName);
+                        String[] split = uri.split("/");
+                        String fileName = split[split.length - 1];
+                        logger.info(fileName);
+                        if ("favicon.ico".equalsIgnoreCase(fileName)) {
+                            return getFavicon();
+                        } else {
+                            return serveClientUIFiles(fileName);
+                        }
                     }
 
                 }
@@ -135,6 +139,10 @@ public class NanoHttpShareServer implements HttpShareServer {
                 }
                 return newFixedLengthResponse(msg + "</body></html>\n");
 
+            }
+
+            private Response serveClientUIFiles(String fileName) {
+                return serveFolder("dist", fileName);
             }
 
             private Response getFavicon() {
