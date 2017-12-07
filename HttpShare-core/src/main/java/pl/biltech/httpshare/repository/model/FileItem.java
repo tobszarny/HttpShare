@@ -39,4 +39,19 @@ public class FileItem {
     public UUID getId() {
         return id;
     }
+
+    public FileItem withRemovable(boolean removable) {
+        this.removable = removable;
+        return this;
+    }
+
+    public FileItem withPersistentDownload(boolean persistentDownload) {
+        this.persistentDownload = persistentDownload;
+        return this;
+    }
+
+    public FileItem withUrl(String url) {
+        this.url = url;
+        return this;
+    }
 }

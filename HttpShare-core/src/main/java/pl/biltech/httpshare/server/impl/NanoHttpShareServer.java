@@ -1,12 +1,16 @@
 package pl.biltech.httpshare.server.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.iki.elonen.NanoHTTPD;
 import fi.iki.elonen.NanoHTTPD.Response;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.biltech.httpshare.annotation.VisibleForTesting;
 import pl.biltech.httpshare.event.EventPublisher;
 import pl.biltech.httpshare.event.impl.DownloadWaitingForRequestEvent;
+import pl.biltech.httpshare.repository.model.FileItem;
 import pl.biltech.httpshare.server.HttpShareServer;
 import pl.biltech.httpshare.server.support.HttpHandlerFactory;
 import pl.biltech.httpshare.server.support.impl.NanoHttpHandlerFactory;
@@ -118,7 +122,14 @@ public class NanoHttpShareServer implements HttpShareServer {
                     return httpHanderFactory.createRedirectHttpHandler("/index.html");
                 } else if (uri.length() > 1) {
                     if (uri.startsWith("/api")) {
-
+                        ObjectMapper om = new ObjectMapper();
+                        try {
+                            String json = om.writeValueAsString(new FileItem().withPersistentDownload(true).withRemovable(false).withUrl("someUrl"));
+                            return newFixedLengthResponse(Response.Status.OK, "application/json", json);
+                        } catch (JsonProcessingException e) {
+                            logger.error("Problem generating json", e);
+                            return newFixedLengthResponse(Response.Status.BAD_REQUEST, "text/html", ExceptionUtils.getStackTrace(e));
+                        }
                     } else {
                         String[] split = uri.split("/");
                         String fileName = split[split.length - 1];
