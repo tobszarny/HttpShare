@@ -8,6 +8,7 @@ import pl.biltech.httpshare.event.impl.DownloadFinishedEvent;
 import pl.biltech.httpshare.event.impl.DownloadStartedEvent;
 import pl.biltech.httpshare.model.HttpStatusCode;
 import pl.biltech.httpshare.server.support.HttpHandlerFactory;
+import pl.biltech.httpshare.util.MimeUtil;
 import pl.biltech.httpshare.util.StreamUtil;
 
 import java.io.*;
@@ -39,7 +40,7 @@ public class StandardHttpHandlerFactory implements HttpHandlerFactory<HttpHandle
 
     @Override
     public HttpHandler createDownloadHttpHandler(final File file) {
-        return createDownloadHttpHandler(file, APPLICATION_OCTET_STREAM);
+        return createDownloadHttpHandler(file, MimeUtil.APPLICATION_OCTET_STREAM);
     }
 
     @Override
@@ -71,5 +72,30 @@ public class StandardHttpHandlerFactory implements HttpHandlerFactory<HttpHandle
                 }
             }
         };
+    }
+
+    @Override
+    public HttpHandler createErrorHttpHandler(Exception e) {
+        return null;
+    }
+
+    @Override
+    public HttpHandler createErrorHttpHandler(String message) {
+        return null;
+    }
+
+    @Override
+    public HttpHandler createJsonHttpHandler(String json) {
+        return null;
+    }
+
+    @Override
+    public HttpHandler createJsonHttpHandler(Object object) throws Exception {
+        return null;
+    }
+
+    @Override
+    public HttpHandler createFolderContentHttpHandler(String folder, String fileName) {
+        return null;
     }
 }

@@ -1,19 +1,16 @@
 package pl.biltech.httpshare.server.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.iki.elonen.NanoHTTPD;
 import fi.iki.elonen.NanoHTTPD.Response;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.biltech.httpshare.annotation.VisibleForTesting;
 import pl.biltech.httpshare.event.EventPublisher;
 import pl.biltech.httpshare.event.impl.DownloadWaitingForRequestEvent;
-import pl.biltech.httpshare.repository.model.FileItem;
 import pl.biltech.httpshare.server.HttpShareServer;
 import pl.biltech.httpshare.server.support.HttpHandlerFactory;
 import pl.biltech.httpshare.server.support.impl.NanoHttpHandlerFactory;
+import pl.biltech.httpshare.util.MimeUtil;
 import pl.biltech.httpshare.util.NetworkUtil;
 
 import java.awt.*;
@@ -62,13 +59,18 @@ public class NanoHttpShareServer implements HttpShareServer {
         this.httpHanderFactory = httpHanderFactory;
     }
 
-    private String buildUrl(File file) throws UnknownHostException {
+    private String buildFileUrl(File file) throws UnknownHostException {
+        StringBuilder urlBuilder = buildServerUrl();
+        urlBuilder.append("/").append(file.getName());
+        return urlBuilder.toString();
+    }
+
+    private StringBuilder buildServerUrl() throws UnknownHostException {
         StringBuilder urlBuilder = new StringBuilder("http://").append(networkUtil.getLocalHostName());
         if (this.port != 80) {
             urlBuilder.append(":").append(this.port);
         }
-        urlBuilder.append("/").append(file.getName());
-        return urlBuilder.toString();
+        return urlBuilder;
     }
 
     @Override
@@ -96,7 +98,7 @@ public class NanoHttpShareServer implements HttpShareServer {
 //        httpServer.createContext("/", httpHanderFactory.createRedirectHttpHandler(relativeDownloadPath));
 //        httpServer.createContext(relativeDownloadPath, httpHanderFactory.createDownloadHttpHandler(file));
 
-        url = buildUrl(file);
+        url = buildFileUrl(file);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(new StringSelection(url), (clipboard1, contents) -> {
             // wywolane w momencie gdy ktos nadpisze schowek
@@ -118,86 +120,47 @@ public class NanoHttpShareServer implements HttpShareServer {
                 Map<String, String> parms = session.getParms();
                 Map<String, String> headers = session.getHeaders();
 
-                if ("/".equals(uri)) {
-                    return httpHanderFactory.createRedirectHttpHandler("/index.html");
-                } else if (uri.length() > 1) {
-                    if (uri.startsWith("/api")) {
-                        ObjectMapper om = new ObjectMapper();
-                        try {
-                            String json = om.writeValueAsString(new FileItem().withPersistentDownload(true).withRemovable(false).withUrl("someUrl"));
-                            return newFixedLengthResponse(Response.Status.OK, "application/json", json);
-                        } catch (JsonProcessingException e) {
-                            logger.error("Problem generating json", e);
-                            return newFixedLengthResponse(Response.Status.BAD_REQUEST, "text/html", ExceptionUtils.getStackTrace(e));
-                        }
-                    } else {
-                        String[] split = uri.split("/");
-                        String fileName = split[split.length - 1];
-                        logger.info(fileName);
-                        if ("favicon.ico".equalsIgnoreCase(fileName)) {
-                            return getFavicon();
+                try {
+                    if ("/".equals(uri)) {
+                        return httpHanderFactory.createRedirectHttpHandler("/index.html");
+                    } else if (uri.length() > 1) {
+                        if (uri.startsWith("/api")) {
+                            return httpHanderFactory.createJsonHttpHandler((Object) null);
                         } else {
-                            return serveClientUIFiles(fileName);
+                            String[] split = uri.split("/");
+                            String fileName = split[split.length - 1];
+                            logger.info(fileName);
+                            if ("favicon.ico".equalsIgnoreCase(fileName)) {
+                                return getFavicon();
+                            } else {
+                                return serveClientUIFiles(fileName);
+                            }
                         }
+
                     }
-
+                } catch (Exception e) {
+                    logger.error("Problem handling request", e);
+                    return httpHanderFactory.createErrorHttpHandler(e);
                 }
-                String msg = "<html><body><h1>Hello server</h1>\n";
-                if (parms.get("username") == null) {
-                    msg += "<form action='?' method='get'>\n  <p>Your name: <input type='text' name='username'></p>\n" + "</form>\n";
-                } else {
-                    msg += "<p>Hello, " + parms.get("username") + "!</p>";
-                }
-                return newFixedLengthResponse(msg + "</body></html>\n");
-
+                return httpHanderFactory.createErrorHttpHandler("");
             }
 
             private Response serveClientUIFiles(String fileName) {
-                return serveFolder("dist", fileName);
+                return httpHanderFactory.createFolderContentHttpHandler("dist", fileName);
             }
 
             private Response getFavicon() {
                 ClassLoader classLoader = getClass().getClassLoader();
                 File file = new File(classLoader.getResource("images/ico.png").getFile());
-                return httpHanderFactory.createDownloadHttpHandler(file, "image/png");
-            }
-
-            private Response serveFolder(String folder, String fileName) {
-                ClassLoader classLoader = getClass().getClassLoader();
-                String mime = classifyMimeAfterFileName(fileName);
-                File file = new File(classLoader.getResource(folder + "/" + fileName).getFile());
-                return httpHanderFactory.createDownloadHttpHandler(file, mime);
+                return httpHanderFactory.createDownloadHttpHandler(file, MimeUtil.IMAGE_PNG);
             }
         };
 
         nanoHTTPD.setAsyncRunner(new BoundRunner(Executors.newFixedThreadPool(N_THREADS)));
 
         nanoHTTPD.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
-        logger.info("Running! Point your browsers to http://" + localHostName + ":" + port + "/ \n");
+        logger.info("Running! Point your browsers to " + buildServerUrl() + " \n");
 
-    }
-
-    private String classifyMimeAfterFileName(String fileName) {
-        String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
-        switch (extension) {
-            case "png":
-            case "jpg":
-            case "jpeg":
-            case "ico":
-            case "bmp":
-            case "gif":
-                return "image/" + extension;
-            case "js":
-                return "text/javascript";
-            case "css":
-                return "text/css";
-            case "htm":
-            case "html":
-            case "htmls":
-                return "text/html; charset=utf-8";
-            default:
-                return HttpHandlerFactory.APPLICATION_OCTET_STREAM;
-        }
     }
 
     @Override
