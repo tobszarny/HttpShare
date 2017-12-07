@@ -120,7 +120,7 @@ public class NanoHttpShareServer implements HttpShareServer {
                 Map<String, String> headers = session.getHeaders();
 
                 if ("/".equals(uri)) {
-
+                    return httpHanderFactory.createRedirectHttpHandler("/index.html");
                 } else if (uri.length() > 1) {
                     String[] split = uri.split("/");
                     String fileName = split[split.length - 1];
@@ -150,8 +150,9 @@ public class NanoHttpShareServer implements HttpShareServer {
 
             private Response serveFolder(String folder, String fileName) {
                 ClassLoader classLoader = getClass().getClassLoader();
+                String mime = classifyMimeAfterFileName(fileName);
                 File file = new File(classLoader.getResource(folder + "/" + fileName).getFile());
-                return httpHanderFactory.createDownloadHttpHandler(file, "image/png");
+                return httpHanderFactory.createDownloadHttpHandler(file, mime);
             }
         };
 
@@ -160,6 +161,29 @@ public class NanoHttpShareServer implements HttpShareServer {
         nanoHTTPD.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
         logger.info("Running! Point your browsers to http://" + localHostName + ":" + port + "/ \n");
 
+    }
+
+    private String classifyMimeAfterFileName(String fileName) {
+        String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
+        switch (extension) {
+            case "png":
+            case "jpg":
+            case "jpeg":
+            case "ico":
+            case "bmp":
+            case "gif":
+                return "image/" + extension;
+            case "js":
+                return "text/javascript";
+            case "css":
+                return "text/css";
+            case "htm":
+            case "html":
+            case "htmls":
+                return "text/html; charset=utf-8";
+            default:
+                return HttpHandlerFactory.APPLICATION_OCTET_STREAM;
+        }
     }
 
     @Override
