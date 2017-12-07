@@ -14,9 +14,7 @@ import pl.biltech.httpshare.util.NetworkUtil;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -96,11 +94,8 @@ public class NanoHttpShareServer implements HttpShareServer {
 
         url = buildUrl(file);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        clipboard.setContents(new StringSelection(url), new ClipboardOwner() {
-            @Override
-            public void lostOwnership(Clipboard clipboard, Transferable contents) {
-                // wywolane w momencie gdy ktos nadpisze schowek
-            }
+        clipboard.setContents(new StringSelection(url), (clipboard1, contents) -> {
+            // wywolane w momencie gdy ktos nadpisze schowek
         });
         eventPublisher.publish(new DownloadWaitingForRequestEvent(url));
     }
