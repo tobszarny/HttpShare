@@ -6,9 +6,10 @@ import pl.biltech.httpshare.repository.model.FileItem;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class FileRepositoryImpl implements FileRepository {
-    private final Map<Long, FileItem> repositoryStore = new LinkedHashMap<>();
+    private final Map<UUID, FileItem> repositoryStore = new LinkedHashMap<>();
 
     @Override
     public void add(FileItem fileItem) {
@@ -21,7 +22,7 @@ public class FileRepositoryImpl implements FileRepository {
     }
 
     @Override
-    public boolean remove(long id) {
+    public boolean remove(UUID id) {
         if (repositoryStore.containsKey(id)) {
             repositoryStore.remove(id);
             return true;
@@ -30,12 +31,12 @@ public class FileRepositoryImpl implements FileRepository {
     }
 
     @Override
-    public boolean removeAll(List<Long> ids) {
+    public boolean removeAll(List<UUID> ids) {
         if (ids.isEmpty()) {
             return false;
         }
         boolean allRemoved = true;
-        for (Long id : ids) {
+        for (UUID id : ids) {
             allRemoved &= remove(id);
         }
         return allRemoved;

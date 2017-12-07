@@ -1,14 +1,15 @@
 package pl.biltech.httpshare.repository.model;
 
+import java.util.UUID;
+
 public class FileItem {
-    private static long idSequence = 1L;
-    private final long id;
+    private final UUID id;
     private boolean removable;
     private boolean persistentDownload;
     private String url;
 
     public FileItem() {
-        id = idSequence++;
+        id = UUID.randomUUID();
     }
 
     public boolean isRemovable() {
@@ -35,7 +36,7 @@ public class FileItem {
         this.url = url;
     }
 
-    public long getId() {
+    public UUID getId() {
         return id;
     }
 }
