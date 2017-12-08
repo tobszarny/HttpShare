@@ -52,8 +52,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import static pl.biltech.httpshare.httpd.Response.IStatus;
-
 
 /**
  * A simple, tiny, nicely embeddable HTTP server in Java

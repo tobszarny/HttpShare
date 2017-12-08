@@ -3,7 +3,7 @@ package pl.biltech.httpshare.httpd;
 /**
  * Some HTTP response status codes
  */
-public enum ResponseStatus implements Response.IStatus {
+public enum ResponseStatus implements IStatus {
     SWITCH_PROTOCOL(101, "Switching Protocols"),
     OK(200, "OK"),
     CREATED(201, "Created"),
