@@ -1,57 +1,86 @@
 package pl.biltech.httpshare.util;
 
-import static pl.biltech.httpshare.util.Assert.assertTrue;
-
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.UnknownHostException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import pl.biltech.httpshare.annotation.VisibleForTesting;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
+import static pl.biltech.httpshare.util.Assert.assertTrue;
 
 /**
  * @author tomek, bilu
- * 
  */
 public class NetworkUtil {
 
-	private static final Logger logger = LoggerFactory.getLogger(NetworkUtil.class);
-	private ServerSocket socket;
+    private static final Logger LOGGER = LoggerFactory.getLogger(NetworkUtil.class);
+    private ServerSocket socket;
 
-	public String getLocalHostName() throws UnknownHostException {
-		return java.net.InetAddress.getLocalHost().getHostName();
-	}
+    public static final void safeClose(Object closeable) {
+        try {
+            if (closeable != null) {
+                if (closeable instanceof Closeable) {
+                    ((Closeable) closeable).close();
+                } else if (closeable instanceof Socket) {
+                    ((Socket) closeable).close();
+                } else if (closeable instanceof ServerSocket) {
+                    ((ServerSocket) closeable).close();
+                } else {
+                    throw new IllegalArgumentException("Unknown object to close");
+                }
+            }
+        } catch (IOException e) {
+            LOGGER.error("Could not close", e);
+        }
+    }
 
-	public int findFirstFreePort(int startFrom) {
-		assertTrue(startFrom > 0);
-		assertTrue(startFrom < 65535);
+    public String getLocalHostName() throws UnknownHostException {
+        String hostName = InetAddress.getLocalHost().getHostName();
 
-		logger.debug("findFirstFreePort called for: {}", startFrom);
-		try {
-			socket = getServerSocket(startFrom);
-			logger.info("Found free port: {}", startFrom);
-			return startFrom;
-		} catch (IOException e) {
-		} finally {
-			closeSocket();
-		}
-		return findFirstFreePort(startFrom + 1);
-	}
+        InetAddress ip = null;
+        try {
+            ip = InetAddress.getByName(hostName);
+            LOGGER.debug("Resolved hostname {} to {}", hostName, ip);
+        } catch (Exception e) {
+            LOGGER.error("Could not resolve IP", e);
+        }
 
-	private void closeSocket() {
-		if (socket != null) {
-			try {
-				socket.close();
-			} catch (IOException e) {
-				logger.error("Error during socket closing", e);
-			}
-		}
-	}
+        return hostName;
+    }
 
-	@VisibleForTesting
-	ServerSocket getServerSocket(int startFrom) throws IOException {
-		return new ServerSocket(startFrom);
-	}
+    public int findFirstFreePort(int startFrom) {
+        assertTrue(startFrom > 0);
+        assertTrue(startFrom < 65535);
+
+        LOGGER.debug("findFirstFreePort called for: {}", startFrom);
+        try {
+            socket = getServerSocket(startFrom);
+            LOGGER.info("Found free port: {}", startFrom);
+            return startFrom;
+        } catch (IOException e) {
+        } finally {
+            closeSocket();
+        }
+        return findFirstFreePort(startFrom + 1);
+    }
+
+    private void closeSocket() {
+        if (socket != null) {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                LOGGER.error("Error during socket closing", e);
+            }
+        }
+    }
+
+    @VisibleForTesting
+    ServerSocket getServerSocket(int startFrom) throws IOException {
+        return new ServerSocket(startFrom);
+    }
 }

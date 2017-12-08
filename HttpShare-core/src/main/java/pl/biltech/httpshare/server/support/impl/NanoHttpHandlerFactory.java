@@ -3,6 +3,8 @@ package pl.biltech.httpshare.server.support.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import pl.biltech.httpshare.event.EventPublisher;
+import pl.biltech.httpshare.httpd.Response;
+import pl.biltech.httpshare.httpd.ResponseStatus;
 import pl.biltech.httpshare.repository.model.FileItem;
 import pl.biltech.httpshare.server.support.HttpHandlerFactory;
 import pl.biltech.httpshare.util.MimeUtil;
@@ -11,8 +13,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
-import static fi.iki.elonen.NanoHTTPD.Response;
-import static fi.iki.elonen.NanoHTTPD.newFixedLengthResponse;
+import static pl.biltech.httpshare.httpd.NanoHTTPD.newFixedLengthResponse;
 import static pl.biltech.httpshare.util.MimeUtil.classifyMimeAfterFileName;
 
 public class NanoHttpHandlerFactory implements HttpHandlerFactory<Response> {
@@ -26,7 +27,7 @@ public class NanoHttpHandlerFactory implements HttpHandlerFactory<Response> {
 
     @Override
     public Response createRedirectHttpHandler(String redirectUrl) {
-        Response r = newFixedLengthResponse(Response.Status.REDIRECT, MimeUtil.TEXT_HTML, "");
+        Response r = newFixedLengthResponse(ResponseStatus.REDIRECT, MimeUtil.TEXT_HTML, "");
         r.addHeader("Location", redirectUrl);
         return r;
     }
@@ -43,7 +44,7 @@ public class NanoHttpHandlerFactory implements HttpHandlerFactory<Response> {
             fis = new FileInputStream(file);
         } catch (FileNotFoundException ex) {
         }
-        return newFixedLengthResponse(Response.Status.OK, mime, fis, file.length());
+        return newFixedLengthResponse(ResponseStatus.OK, mime, fis, file.length());
     }
 
     @Override
@@ -53,12 +54,12 @@ public class NanoHttpHandlerFactory implements HttpHandlerFactory<Response> {
 
     @Override
     public Response createErrorHttpHandler(String message) {
-        return newFixedLengthResponse(Response.Status.BAD_REQUEST, TEXT_HTML, message);
+        return newFixedLengthResponse(ResponseStatus.BAD_REQUEST, TEXT_HTML, message);
     }
 
     @Override
     public Response createJsonHttpHandler(String json) {
-        return newFixedLengthResponse(Response.Status.OK, APPLICATION_JSON, json);
+        return newFixedLengthResponse(ResponseStatus.OK, APPLICATION_JSON, json);
     }
 
     @Override
