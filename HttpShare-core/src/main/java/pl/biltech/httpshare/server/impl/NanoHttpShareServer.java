@@ -10,6 +10,7 @@ import pl.biltech.httpshare.httpd.http.IHTTPSession;
 import pl.biltech.httpshare.httpd.http.Method;
 import pl.biltech.httpshare.httpd.http.Response;
 import pl.biltech.httpshare.httpd.runner.impl.BoundRunner;
+import pl.biltech.httpshare.httpd.socket.impl.IPServerSocketFactory;
 import pl.biltech.httpshare.server.HttpShareServer;
 import pl.biltech.httpshare.server.support.HttpHandlerFactory;
 import pl.biltech.httpshare.server.support.impl.NanoHttpHandlerFactory;
@@ -127,8 +128,8 @@ public class NanoHttpShareServer implements HttpShareServer {
 
         InetAddress byName = InetAddress.getByName(hostname);
 
-//        Arrays.stream(allByName).forEach(inetAddress -> {
-        Arrays.stream(new InetAddress[]{byName}).forEach(inetAddress -> {
+        Arrays.stream(allByName).forEach(inetAddress -> {
+//        Arrays.stream(new InetAddress[]{byName}).forEach(inetAddress -> {
                     NanoHTTPD instance = new NanoHTTPD(inetAddress.getHostAddress(), port) {
 
                         @Override
@@ -173,13 +174,13 @@ public class NanoHttpShareServer implements HttpShareServer {
                             return httpHanderFactory.createDownloadHttpHandler(file, MimeUtil.IMAGE_PNG);
                         }
                     };
-//                    instance.setServerSocketFactory(new IPServerSocketFactory(port, inetAddress));
+                    instance.setServerSocketFactory(new IPServerSocketFactory(port, inetAddress));
                     nanoHTTPDs.add(instance);
                 }
         );
 
         nanoHTTPDs.stream().forEach(n -> {
-            logger.info("Starting on " + n.getHostname());
+            logger.info("Starting on " + n.getHostname() + ":" + n.getMyPort());
             try {
                 n.setAsyncRunner(new BoundRunner(Executors.newFixedThreadPool(N_THREADS)));
                 n.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);

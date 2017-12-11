@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
@@ -30,7 +30,10 @@ public class ServerRunnable implements Runnable {
     @Override
     public void run() {
         try {
-            nanoHTTPD.getMyServerSocket().bind(nanoHTTPD.getHostname() != null ? new InetSocketAddress(nanoHTTPD.getHostname(), nanoHTTPD.getMyPort()) : new InetSocketAddress(nanoHTTPD.getMyPort()));
+            ServerSocket serverSocket = nanoHTTPD.getServerSocketFactory().create();
+            serverSocket.setReuseAddress(true);
+            nanoHTTPD.setMyServerSocket(serverSocket);
+            //nanoHTTPD.getMyServerSocket().bind(nanoHTTPD.getHostname() != null ? new InetSocketAddress(nanoHTTPD.getHostname(), nanoHTTPD.getMyPort()) : new InetSocketAddress(nanoHTTPD.getMyPort()));
             hasBinded = true;
         } catch (IOException e) {
             this.bindException = e;
