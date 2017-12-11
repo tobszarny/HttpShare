@@ -1,7 +1,11 @@
-package pl.biltech.httpshare.httpd;
+package pl.biltech.httpshare.httpd.runner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.biltech.httpshare.httpd.NanoHTTPD;
+import pl.biltech.httpshare.httpd.http.HTTPSession;
+import pl.biltech.httpshare.httpd.manager.file.TempFileManager;
+import pl.biltech.httpshare.httpd.manager.file.TempFileManagerFactory;
 import pl.biltech.httpshare.util.NetworkUtil;
 
 import java.io.InputStream;
@@ -60,7 +64,7 @@ public class ClientHandler implements Runnable {
             NetworkUtil.safeClose(outputStream);
             NetworkUtil.safeClose(this.inputStream);
             NetworkUtil.safeClose(this.acceptSocket);
-            nanoHTTPD.asyncRunner.closed(this);
+            nanoHTTPD.getAsyncRunner().closed(this);
         }
     }
 }

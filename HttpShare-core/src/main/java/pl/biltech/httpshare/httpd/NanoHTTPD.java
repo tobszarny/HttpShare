@@ -33,6 +33,15 @@ package pl.biltech.httpshare.httpd;
          * #L%
          */
 
+import pl.biltech.httpshare.httpd.http.*;
+import pl.biltech.httpshare.httpd.manager.file.TempFileManagerFactory;
+import pl.biltech.httpshare.httpd.manager.file.impl.DefaultTempFileManagerFactory;
+import pl.biltech.httpshare.httpd.runner.AsyncRunner;
+import pl.biltech.httpshare.httpd.runner.ClientHandler;
+import pl.biltech.httpshare.httpd.runner.impl.DefaultAsyncRunner;
+import pl.biltech.httpshare.httpd.socket.ServerSocketFactory;
+import pl.biltech.httpshare.httpd.socket.impl.DefaultServerSocketFactory;
+import pl.biltech.httpshare.httpd.socket.impl.SecureServerSocketFactory;
 import pl.biltech.httpshare.util.NetworkUtil;
 
 import javax.net.ssl.*;
@@ -398,16 +407,6 @@ public abstract class NanoHTTPD {
         return decoded;
     }
 
-    /**
-     * @return true if the gzip compression should be used if the client
-     * accespts it. Default this option is on for text content and off
-     * for everything. Override this for custom semantics.
-     */
-    @SuppressWarnings("static-method")
-    protected boolean useGzipWhenAccepted(Response r) {
-        return r.getMimeType() != null && r.getMimeType().toLowerCase().contains("text/");
-    }
-
     public final int getListeningPort() {
         return this.myServerSocket == null ? -1 : this.myServerSocket.getLocalPort();
     }
@@ -618,5 +617,9 @@ public abstract class NanoHTTPD {
 
     public int getMyPort() {
         return myPort;
+    }
+
+    public AsyncRunner getAsyncRunner() {
+        return asyncRunner;
     }
 }

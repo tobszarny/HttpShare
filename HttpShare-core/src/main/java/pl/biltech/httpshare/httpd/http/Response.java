@@ -1,4 +1,4 @@
-package pl.biltech.httpshare.httpd;
+package pl.biltech.httpshare.httpd.http;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +71,7 @@ public class Response implements Closeable {
     /**
      * Creates a fixed length response if totalBytes>=0, otherwise chunked.
      */
-    protected Response(IStatus status, String mimeType, InputStream data, long totalBytes) {
+    public Response(IStatus status, String mimeType, InputStream data, long totalBytes) {
         this.status = status;
         this.mimeType = mimeType;
         if (data == null) {
@@ -280,5 +280,15 @@ public class Response implements Closeable {
 
     public void setStatus(IStatus status) {
         this.status = status;
+    }
+
+    /**
+     * @return true if the gzip compression should be used if the client
+     * accespts it. Default this option is on for text content and off
+     * for everything. Override this for custom semantics.
+     */
+    @SuppressWarnings("static-method")
+    public boolean useGzipWhenAccepted() {
+        return getMimeType() != null && getMimeType().toLowerCase().contains("text/");
     }
 }

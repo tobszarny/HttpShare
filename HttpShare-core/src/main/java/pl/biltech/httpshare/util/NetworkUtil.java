@@ -6,10 +6,8 @@ import pl.biltech.httpshare.annotation.VisibleForTesting;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.io.UnsupportedEncodingException;
+import java.net.*;
 
 import static pl.biltech.httpshare.util.Assert.assertTrue;
 
@@ -82,5 +80,23 @@ public class NetworkUtil {
     @VisibleForTesting
     ServerSocket getServerSocket(int startFrom) throws IOException {
         return new ServerSocket(startFrom);
+    }
+
+
+    /**
+     * Decode encoded URL <code>String</code> values.
+     *
+     * @param str the percent encoded <code>String</code>
+     * @return expanded form of the input, for example "foo%20bar" becomes
+     * "foo bar"
+     */
+    public static String decode(String str) {
+        String decoded = null;
+        try {
+            decoded = URLDecoder.decode(str, "UTF8");
+        } catch (UnsupportedEncodingException ignored) {
+            LOGGER.warn("Encoding not supported, ignored", ignored);
+        }
+        return decoded;
     }
 }

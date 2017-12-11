@@ -1,4 +1,4 @@
-package pl.biltech.httpshare.httpd;
+package pl.biltech.httpshare.httpd.manager.file;
 
 import java.io.OutputStream;
 

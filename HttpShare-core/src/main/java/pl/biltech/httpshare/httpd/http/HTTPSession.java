@@ -1,7 +1,10 @@
-package pl.biltech.httpshare.httpd;
+package pl.biltech.httpshare.httpd.http;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.biltech.httpshare.httpd.NanoHTTPD;
+import pl.biltech.httpshare.httpd.manager.file.TempFile;
+import pl.biltech.httpshare.httpd.manager.file.TempFileManager;
 import pl.biltech.httpshare.util.NetworkUtil;
 
 import javax.net.ssl.SSLException;
@@ -104,9 +107,9 @@ public class HTTPSession implements IHTTPSession {
             int qmi = uri.indexOf('?');
             if (qmi >= 0) {
                 decodeParms(uri.substring(qmi + 1), parms);
-                uri = NanoHTTPD.decodePercent(uri.substring(0, qmi));
+                uri = NetworkUtil.decode(uri.substring(0, qmi));
             } else {
-                uri = NanoHTTPD.decodePercent(uri);
+                uri = NetworkUtil.decode(uri);
             }
 
             // If there's another token, its protocol version,
@@ -258,9 +261,9 @@ public class HTTPSession implements IHTTPSession {
             String e = st.nextToken();
             int sep = e.indexOf('=');
             if (sep >= 0) {
-                p.put(NanoHTTPD.decodePercent(e.substring(0, sep)).trim(), NanoHTTPD.decodePercent(e.substring(sep + 1)));
+                p.put(NetworkUtil.decode(e.substring(0, sep)).trim(), NetworkUtil.decode(e.substring(sep + 1)));
             } else {
-                p.put(NanoHTTPD.decodePercent(e).trim(), "");
+                p.put(NetworkUtil.decode(e).trim(), "");
             }
         }
     }
@@ -355,7 +358,7 @@ public class HTTPSession implements IHTTPSession {
                 String acceptEncoding = this.headers.get("accept-encoding");
                 this.cookies.unloadQueue(r);
                 r.setRequestMethod(this.method);
-                r.setGzipEncoding(nanoHTTPD.useGzipWhenAccepted(r) && acceptEncoding != null && acceptEncoding.contains("gzip"));
+                r.setGzipEncoding(r.useGzipWhenAccepted() && acceptEncoding != null && acceptEncoding.contains("gzip"));
                 r.setKeepAlive(keepAlive);
                 r.send(this.outputStream);
             }

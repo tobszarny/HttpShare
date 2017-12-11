@@ -1,4 +1,4 @@
-package pl.biltech.httpshare.httpd;
+package pl.biltech.httpshare.httpd.http;
 
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -9,7 +9,7 @@ import java.io.OutputStream;
  * OutputStream according to chunked transfer:
  * http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.6.1
  */
-class ChunkedOutputStream extends FilterOutputStream {
+public class ChunkedOutputStream extends FilterOutputStream {
 
     public ChunkedOutputStream(OutputStream out) {
         super(out);

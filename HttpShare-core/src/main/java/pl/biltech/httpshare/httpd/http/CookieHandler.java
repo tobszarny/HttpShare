@@ -1,4 +1,4 @@
-package pl.biltech.httpshare.httpd;
+package pl.biltech.httpshare.httpd.http;
 
 import java.util.ArrayList;
 import java.util.HashMap;

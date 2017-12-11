@@ -1,5 +1,6 @@
-package pl.biltech.httpshare.httpd;
+package pl.biltech.httpshare.httpd.manager.file.impl;
 
+import pl.biltech.httpshare.httpd.manager.file.TempFile;
 import pl.biltech.httpshare.util.NetworkUtil;
 
 import java.io.File;

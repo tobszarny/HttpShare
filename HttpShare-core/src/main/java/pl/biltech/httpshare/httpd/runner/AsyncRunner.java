@@ -1,4 +1,4 @@
-package pl.biltech.httpshare.httpd;
+package pl.biltech.httpshare.httpd.runner;
 
 /**
  * Pluggable strategy for asynchronously executing requests.

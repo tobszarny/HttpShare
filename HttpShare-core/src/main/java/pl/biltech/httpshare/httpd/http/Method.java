@@ -1,4 +1,4 @@
-package pl.biltech.httpshare.httpd;
+package pl.biltech.httpshare.httpd.http;
 
 /**
  * HTTP Request methods, with the ability to decode a <code>String</code>

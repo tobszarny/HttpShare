@@ -1,7 +1,7 @@
-package pl.biltech.httpshare.server.impl;
+package pl.biltech.httpshare.httpd.runner.impl;
 
-import pl.biltech.httpshare.httpd.AsyncRunner;
-import pl.biltech.httpshare.httpd.ClientHandler;
+import pl.biltech.httpshare.httpd.runner.AsyncRunner;
+import pl.biltech.httpshare.httpd.runner.ClientHandler;
 
 import java.util.ArrayList;
 import java.util.Collections;

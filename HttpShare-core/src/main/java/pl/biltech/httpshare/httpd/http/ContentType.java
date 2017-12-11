@@ -1,4 +1,4 @@
-package pl.biltech.httpshare.httpd;
+package pl.biltech.httpshare.httpd.http;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

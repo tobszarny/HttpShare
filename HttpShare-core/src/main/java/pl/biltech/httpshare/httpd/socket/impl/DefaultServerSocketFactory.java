@@ -1,4 +1,6 @@
-package pl.biltech.httpshare.httpd;
+package pl.biltech.httpshare.httpd.socket.impl;
+
+import pl.biltech.httpshare.httpd.socket.ServerSocketFactory;
 
 import java.io.IOException;
 import java.net.ServerSocket;
