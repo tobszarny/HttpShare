@@ -7,7 +7,13 @@ import pl.biltech.httpshare.annotation.VisibleForTesting;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static pl.biltech.httpshare.util.Assert.assertTrue;
 
@@ -37,7 +43,7 @@ public class NetworkUtil {
         }
     }
 
-    public String getLocalHostName() throws UnknownHostException {
+    public static String getLocalHostName() throws UnknownHostException {
         String hostName = InetAddress.getLocalHost().getHostName();
 
         InetAddress ip = null;
@@ -51,10 +57,11 @@ public class NetworkUtil {
         return hostName;
     }
 
-    public int findFirstFreePort(int startFrom) {
+    public static int findFirstFreePort(int startFrom) {
         assertTrue(startFrom > 0);
         assertTrue(startFrom < 65535);
 
+        ServerSocket socket = null;
         LOGGER.debug("findFirstFreePort called for: {}", startFrom);
         try {
             socket = getServerSocket(startFrom);
@@ -62,12 +69,12 @@ public class NetworkUtil {
             return startFrom;
         } catch (IOException e) {
         } finally {
-            closeSocket();
+            closeSocket(socket);
         }
         return findFirstFreePort(startFrom + 1);
     }
 
-    private void closeSocket() {
+    private static void closeSocket(ServerSocket socket) {
         if (socket != null) {
             try {
                 socket.close();
@@ -78,8 +85,8 @@ public class NetworkUtil {
     }
 
     @VisibleForTesting
-    ServerSocket getServerSocket(int startFrom) throws IOException {
-        return new ServerSocket(startFrom);
+    public static ServerSocket getServerSocket(int port) throws IOException {
+        return new ServerSocket(port);
     }
 
 
@@ -98,5 +105,82 @@ public class NetworkUtil {
             LOGGER.warn("Encoding not supported, ignored", ignored);
         }
         return decoded;
+    }
+
+    public static void printInetAdressesByHostName(InetAddress[] allByName) {
+        String[] titles = new String[]{"INET", "isSiteLocalAddress", "isAnyLocalAddress", "isLoopbackAddress", "isLinkLocalAddress",
+                "isMulticastAddress", "isMCGlobal", "isMCLinkLocal", "isMCNodeLocal", "isMCOrgLocal", "isMCSiteLocal"};
+
+        int[] columnLengths = new int[titles.length];
+
+        for (int i = 0; i < titles.length; i++) {
+            String title = titles[i];
+            Function<? super InetAddress, ? extends String> function = null;
+            switch (i) {
+                case 0:
+                    function = new ToStringFunction();
+                    break;
+                default:
+                    function = new ToGetterValue(title);
+            }
+            columnLengths[i] = Math.max(title.length(), Arrays.stream(allByName)
+                    .map(function).mapToInt(t -> t.length()).max().orElse(0)
+            );
+        }
+
+        List<String> collect = Arrays.stream(columnLengths).mapToObj(c -> "%" + Integer.toString(c) + "s").collect(Collectors.toList());
+        String patter = String.join(" ", collect);
+
+        System.out.println(String.format(patter, titles));
+
+        for (int i = 0; i < allByName.length; i++) {
+            InetAddress inetAddress = allByName[i];
+            System.out.println(String.format(patter,
+                    inetAddress,
+                    inetAddress.isSiteLocalAddress(),
+                    inetAddress.isAnyLocalAddress(),
+                    inetAddress.isLoopbackAddress(),
+                    inetAddress.isLinkLocalAddress(),
+                    inetAddress.isMulticastAddress(),
+                    inetAddress.isMCGlobal(),
+                    inetAddress.isMCLinkLocal(),
+                    inetAddress.isMCNodeLocal(),
+                    inetAddress.isMCOrgLocal(),
+                    inetAddress.isMCSiteLocal()
+            ));
+        }
+    }
+
+    private static class ToStringFunction implements Function<InetAddress, String> {
+
+        @Override
+        public String apply(InetAddress inetAddress) {
+            return inetAddress.toString();
+        }
+    }
+
+    private static class ToGetterValue implements Function<InetAddress, String> {
+
+        String method;
+
+        public ToGetterValue(String method) {
+            this.method = method;
+        }
+
+        @Override
+        public String apply(InetAddress inetAddress) {
+            try {
+                Method declaredMethod = InetAddress.class.getDeclaredMethod(method, new Class[]{});
+                boolean value = (boolean) declaredMethod.invoke(inetAddress, new Object[]{});
+                return Boolean.toString(value);
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
+            return "dupa";
+        }
     }
 }

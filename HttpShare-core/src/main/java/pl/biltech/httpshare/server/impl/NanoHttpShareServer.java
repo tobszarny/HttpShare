@@ -103,9 +103,6 @@ public class NanoHttpShareServer implements HttpShareServer {
 //        assertNotNull(nanoHTTPD);
         logger.debug("Adding file to download: {}", file.getAbsolutePath());
 
-        String relativeDownloadPath = "/" + file.getName();
-//        httpServer.createContext("/", httpHanderFactory.createRedirectHttpHandler(relativeDownloadPath));
-//        httpServer.createContext(relativeDownloadPath, httpHanderFactory.createDownloadHttpHandler(file));
 
         url = buildFileUrl(file);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -126,58 +123,59 @@ public class NanoHttpShareServer implements HttpShareServer {
         String hostname = networkUtil.getLocalHostName();
         InetAddress[] allByName = InetAddress.getAllByName(hostname);
 
-        InetAddress byName = InetAddress.getByName(hostname);
+//        InetAddress byName = InetAddress.getByName(hostname);
 
-        Arrays.stream(allByName).forEach(inetAddress -> {
-//        Arrays.stream(new InetAddress[]{byName}).forEach(inetAddress -> {
-                    NanoHTTPD instance = new NanoHTTPD(inetAddress.getHostAddress(), port) {
+        Arrays.stream(allByName)
+                .filter(f -> f.isSiteLocalAddress())
+                .forEach(inetAddress -> {
+                            NanoHTTPD instance = new NanoHTTPD(inetAddress.getHostAddress(), port) {
 
-                        @Override
-                        public Response serve(IHTTPSession session) {
-                            Method method = session.getMethod();
-                            String uri = session.getUri();
-                            Map<String, String> parms = session.getParms();
-                            Map<String, String> headers = session.getHeaders();
+                                @Override
+                                public Response serve(IHTTPSession session) {
+                                    Method method = session.getMethod();
+                                    String uri = session.getUri();
+                                    Map<String, String> parms = session.getParms();
+                                    Map<String, String> headers = session.getHeaders();
 
-                            try {
-                                if ("/".equals(uri)) {
-                                    return httpHanderFactory.createRedirectHttpHandler("/index.html");
-                                } else if (uri.length() > 1) {
-                                    if (uri.startsWith("/api")) {
-                                        return httpHanderFactory.createJsonHttpHandler((Object) null);
-                                    } else {
-                                        String[] split = uri.split("/");
-                                        String fileName = split[split.length - 1];
-                                        logger.info(fileName);
-                                        if ("favicon.ico".equalsIgnoreCase(fileName)) {
-                                            return getFavicon();
-                                        } else {
-                                            return serveClientUIFiles(fileName);
+                                    try {
+                                        if ("/".equals(uri)) {
+                                            return httpHanderFactory.createRedirectHttpHandler("/index.html");
+                                        } else if (uri.length() > 1) {
+                                            if (uri.startsWith("/api")) {
+                                                return httpHanderFactory.createJsonHttpHandler((Object) null);
+                                            } else {
+                                                String[] split = uri.split("/");
+                                                String fileName = split[split.length - 1];
+                                                logger.info("{}:{}/ {}", this.getHostname(), this.getMyPort(), fileName);
+                                                if ("favicon.ico".equalsIgnoreCase(fileName)) {
+                                                    return getFavicon();
+                                                } else {
+                                                    return serveClientUIFiles(fileName);
+                                                }
+                                            }
+
                                         }
+                                    } catch (Exception e) {
+                                        logger.error("Problem handling request", e);
+                                        return httpHanderFactory.createErrorHttpHandler(e);
                                     }
-
+                                    return httpHanderFactory.createErrorHttpHandler("");
                                 }
-                            } catch (Exception e) {
-                                logger.error("Problem handling request", e);
-                                return httpHanderFactory.createErrorHttpHandler(e);
-                            }
-                            return httpHanderFactory.createErrorHttpHandler("");
-                        }
 
-                        private Response serveClientUIFiles(String fileName) {
-                            return httpHanderFactory.createFolderContentHttpHandler("dist", fileName);
-                        }
+                                private Response serveClientUIFiles(String fileName) {
+                                    return httpHanderFactory.createFolderContentHttpHandler("dist", fileName);
+                                }
 
-                        private Response getFavicon() {
-                            ClassLoader classLoader = getClass().getClassLoader();
-                            File file = new File(classLoader.getResource("images/ico.png").getFile());
-                            return httpHanderFactory.createDownloadHttpHandler(file, MimeUtil.IMAGE_PNG);
+                                private Response getFavicon() {
+                                    ClassLoader classLoader = getClass().getClassLoader();
+                                    File file = new File(classLoader.getResource("images/ico.png").getFile());
+                                    return httpHanderFactory.createDownloadHttpHandler(file, MimeUtil.IMAGE_PNG);
+                                }
+                            };
+                            instance.setServerSocketFactory(new IPServerSocketFactory(port, inetAddress));
+                            nanoHTTPDs.add(instance);
                         }
-                    };
-                    instance.setServerSocketFactory(new IPServerSocketFactory(port, inetAddress));
-                    nanoHTTPDs.add(instance);
-                }
-        );
+                );
 
         nanoHTTPDs.stream().forEach(n -> {
             logger.info("Starting on " + n.getHostname() + ":" + n.getMyPort());

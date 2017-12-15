@@ -1,11 +1,12 @@
 package pl.biltech.httpshare;
 
+import pl.biltech.httpshare.util.NetworkUtil;
+
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class SocketTests extends Thread {
@@ -13,13 +14,23 @@ public class SocketTests extends Thread {
     public static final int PORT = 8081;
 
     public static void main(String[] args) throws IOException {
-        InetAddress[] allByName = InetAddress.getAllByName("Hall9001");
 
-        Arrays.stream(allByName).forEach(a -> System.out.println(a));
+        String localHostName = NetworkUtil.getLocalHostName();
 
-        InetAddress toBind = allByName[2];
+        InetAddress[] allByName = InetAddress.getAllByName(localHostName);
 
-        System.out.println("binding " + toBind);
+        NetworkUtil.printInetAdressesByHostName(allByName);
+
+        for (int i = 0; i < allByName.length; i++) {
+            System.out.println(String.format("[%d] %s", i + 1, allByName[i]));
+        }
+
+        int readChoice = readChoice(1, allByName.length + 1);
+
+        InetAddress toBind = allByName[readChoice - 1];
+
+        System.out.println("binding to " + toBind);
+        System.out.println("http://" + localHostName + ":" + PORT);
 
         ServerSocket ss = new ServerSocket(PORT, 1, toBind);
 
@@ -35,6 +46,24 @@ public class SocketTests extends Thread {
 
         out.close();
         in.close();
+    }
+
+    private static int readChoice(int from, int to) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int choice = 0;
+        boolean incorrect = true;
+        do {
+            System.out.print("Enter choice: ");
+            String s = br.readLine();
+            choice = Integer.parseInt(s);
+            System.out.println(choice);
+            incorrect = !(choice >= from && choice <= to);
+            if (incorrect) {
+                System.out.println(String.format("Choice has to be between %d and %d, try again", from, to));
+            }
+        } while (incorrect);
+
+        return choice;
     }
 
     private static void sendMessage(BufferedWriter out, File request) throws IOException {

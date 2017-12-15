@@ -140,11 +140,11 @@
 
         <!-- Experimental -->
 
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>0.12.0</version>
-        </dependency>
+        <!--<dependency>-->
+        <!--<groupId>org.projectlombok</groupId>-->
+        <!--<artifactId>lombok</artifactId>-->
+        <!--<version>0.12.0</version>-->
+        <!--</dependency>-->
 
         <!-- For console ANSI syntax coloring - doesn't seem to be working on Win7x64 -->
         <dependency>
