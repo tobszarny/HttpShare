@@ -9,7 +9,10 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
@@ -43,12 +46,12 @@ public class NetworkUtil {
         }
     }
 
-    public static String getLocalHostName() throws UnknownHostException {
-        String hostName = InetAddress.getLocalHost().getHostName();
-
-        InetAddress ip = null;
+    public static String getLocalHostName() {
+        String hostName = "unknown";
         try {
-            ip = InetAddress.getByName(hostName);
+            hostName = InetAddress.getLocalHost().getHostName();
+            InetAddress ip = InetAddress.getByName(hostName);
+
             LOGGER.debug("Resolved hostname {} to {}", hostName, ip);
         } catch (Exception e) {
             LOGGER.error("Could not resolve IP", e);

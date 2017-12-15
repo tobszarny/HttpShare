@@ -12,6 +12,9 @@ import pl.biltech.httpshare.util.MimeUtil;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.IntStream;
 
 import static pl.biltech.httpshare.httpd.NanoHTTPD.newFixedLengthResponse;
 import static pl.biltech.httpshare.util.MimeUtil.classifyMimeAfterFileName;
@@ -65,10 +68,12 @@ public class NanoHttpHandlerFactory implements HttpHandlerFactory<Response> {
     @Override
     public Response createJsonHttpHandler(Object object) throws Exception {
         ObjectMapper om = new ObjectMapper();
-        String json = om.writeValueAsString(new FileItem()
+        List<FileItem> list = new ArrayList<>();
+        IntStream.range(1, 7).forEach(i -> list.add(new FileItem()
                 .withPersistentDownload(true)
                 .withRemovable(false)
-                .withUrl("someUrl"));
+                .withUrl("someUrl-" + i)));
+        String json = om.writeValueAsString(list);
         return createJsonHttpHandler(json);
     }
 

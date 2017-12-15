@@ -23,8 +23,6 @@ import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
@@ -46,34 +44,32 @@ public class NanoHttpShareServer implements HttpShareServer {
     private int port = DEFAULT_START_PORT;
 
     private String url;
-    private NetworkUtil networkUtil;
-    private InetSocketAddress address;
 
     private final EventPublisher eventPublisher;
     private final HttpHandlerFactory<Response> httpHanderFactory;
 
     private java.util.List<NanoHTTPD> nanoHTTPDs = new ArrayList<>();
-
+    private String hostname;
 
     public NanoHttpShareServer(EventPublisher eventPublisher) {
-        this.eventPublisher = eventPublisher;
-        httpHanderFactory = new NanoHttpHandlerFactory(eventPublisher);
+        this(eventPublisher, new NanoHttpHandlerFactory(eventPublisher));
     }
 
     @VisibleForTesting
     NanoHttpShareServer(EventPublisher eventPublisher, HttpHandlerFactory httpHanderFactory) {
         this.eventPublisher = eventPublisher;
         this.httpHanderFactory = httpHanderFactory;
+        this.hostname = NetworkUtil.getLocalHostName();
     }
 
-    private String buildFileUrl(File file) throws UnknownHostException {
+    private String buildFileUrl(File file) {
         StringBuilder urlBuilder = buildServerUrl();
         urlBuilder.append("/").append(file.getName());
         return urlBuilder.toString();
     }
 
-    private StringBuilder buildServerUrl() throws UnknownHostException {
-        StringBuilder urlBuilder = new StringBuilder("http://").append(networkUtil.getLocalHostName());
+    private StringBuilder buildServerUrl() {
+        StringBuilder urlBuilder = new StringBuilder("http://").append(this.hostname);
         if (this.port != 80) {
             urlBuilder.append(":").append(this.port);
         }
@@ -82,16 +78,12 @@ public class NanoHttpShareServer implements HttpShareServer {
 
     @Override
     public void stop() {
-//        assertNotNull(nanoHTTPD);
         nanoHTTPDs.forEach(n -> n.stop());
-//        nanoHTTPD.stop();
         cleanup();
     }
 
     private void cleanup() {
-//        nanoHTTPD = null;
         nanoHTTPDs.clear();
-        address = null;
         port = DEFAULT_START_PORT;
         url = null;
 
@@ -100,7 +92,6 @@ public class NanoHttpShareServer implements HttpShareServer {
     @Override
     public void addFileToDownload(File file) throws IOException {
         assertNotNull(file);
-//        assertNotNull(nanoHTTPD);
         logger.debug("Adding file to download: {}", file.getAbsolutePath());
 
 
@@ -108,22 +99,16 @@ public class NanoHttpShareServer implements HttpShareServer {
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(new StringSelection(url), (clipboard1, contents) -> {
             // wywolane w momencie gdy ktos nadpisze schowek
+            logger.warn("Lost ownership of clipboard");
         });
         eventPublisher.publish(new DownloadWaitingForRequestEvent(url));
     }
 
     @Override
     public void start() throws IOException {
-        networkUtil = new NetworkUtil();
-        port = networkUtil.findFirstFreePort(port);
-        String localHostName = networkUtil.getLocalHostName();
+        port = NetworkUtil.findFirstFreePort(port);
 
-        System.out.println(localHostName);
-
-        String hostname = networkUtil.getLocalHostName();
         InetAddress[] allByName = InetAddress.getAllByName(hostname);
-
-//        InetAddress byName = InetAddress.getByName(hostname);
 
         Arrays.stream(allByName)
                 .filter(f -> f.isSiteLocalAddress())
@@ -200,7 +185,6 @@ public class NanoHttpShareServer implements HttpShareServer {
 
     @Override
     public String getFileToDownloadUrl() {
-//        assertNotNull(nanoHTTPD);
         return url;
     }
 
