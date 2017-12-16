@@ -14,6 +14,14 @@
     </div>
   </div>
 </div>
+<div>
+  <h2>Here are some other for you to download: </h2>
+  <div>
+    <div class="file" *ngFor="let file of getFiles().items;">
+      <a href="#">{{file.url}}</a>
+    </div>
+  </div>
+</div>
 <!--<div>-->
 <!--<h2>Here are some links to help you start: </h2>-->
 <!--<ul>-->

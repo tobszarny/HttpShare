@@ -1,4 +1,5 @@
 import {Component} from '@angular/core';
+import {FileRestService} from "./file.rest-service";
 
 @Component({
   selector: 'app-root',
@@ -6,6 +7,16 @@ import {Component} from '@angular/core';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
+  constructor(private fileRestService: FileRestService) {
+
+  }
+
   title = 'app';
   files = ['ala', 'ma', 'kota'];
+
+  getFiles() {
+    return this.fileRestService.getFiles();
+  }
+
+
 }
