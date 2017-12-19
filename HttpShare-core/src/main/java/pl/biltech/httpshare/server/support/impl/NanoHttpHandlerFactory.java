@@ -5,6 +5,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import pl.biltech.httpshare.event.EventPublisher;
 import pl.biltech.httpshare.httpd.http.Response;
 import pl.biltech.httpshare.httpd.http.ResponseStatus;
+import pl.biltech.httpshare.repository.FileRepository;
 import pl.biltech.httpshare.repository.model.FileItem;
 import pl.biltech.httpshare.server.support.HttpHandlerFactory;
 import pl.biltech.httpshare.util.MimeUtil;
@@ -23,6 +24,7 @@ public class NanoHttpHandlerFactory implements HttpHandlerFactory<Response> {
     public static final String TEXT_HTML = "text/html";
     public static final String APPLICATION_JSON = "application/json";
     private final EventPublisher eventPublisher;
+    private FileRepository fileRepository;
 
     public NanoHttpHandlerFactory(EventPublisher eventPublisher) {
         this.eventPublisher = eventPublisher;
@@ -69,10 +71,19 @@ public class NanoHttpHandlerFactory implements HttpHandlerFactory<Response> {
     public Response createJsonHttpHandler(Object object) throws Exception {
         ObjectMapper om = new ObjectMapper();
         List<FileItem> list = new ArrayList<>();
-        IntStream.range(1, 7).forEach(i -> list.add(new FileItem()
-                .withPersistentDownload(true)
-                .withRemovable(false)
-                .withUrl("someUrl-" + i)));
+        if (object == null) {
+            IntStream.range(1, 7).forEach(i -> list.add(new FileItem()
+                    .withPersistentDownload(true)
+                    .withRemovable(false)
+                    .withUrl("someUrl-" + i)));
+        } else {
+            if (List.class.isAssignableFrom(object.getClass())) {
+                List objects = (List) object;
+                for (Object o : objects) {
+                    list.add((FileItem) o);
+                }
+            }
+        }
         String json = om.writeValueAsString(list);
         return createJsonHttpHandler(json);
     }
@@ -84,4 +95,6 @@ public class NanoHttpHandlerFactory implements HttpHandlerFactory<Response> {
         File file = new File(classLoader.getResource(folder + "/" + fileName).getFile());
         return createDownloadHttpHandler(file, mime);
     }
+
+
 }

@@ -11,6 +11,9 @@ import pl.biltech.httpshare.httpd.http.Method;
 import pl.biltech.httpshare.httpd.http.Response;
 import pl.biltech.httpshare.httpd.runner.impl.BoundRunner;
 import pl.biltech.httpshare.httpd.socket.impl.IPServerSocketFactory;
+import pl.biltech.httpshare.repository.FileRepository;
+import pl.biltech.httpshare.repository.impl.FileRepositoryImpl;
+import pl.biltech.httpshare.repository.model.FileItem;
 import pl.biltech.httpshare.server.HttpShareServer;
 import pl.biltech.httpshare.server.support.HttpHandlerFactory;
 import pl.biltech.httpshare.server.support.impl.NanoHttpHandlerFactory;
@@ -25,6 +28,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
@@ -50,6 +54,8 @@ public class NanoHttpShareServer implements HttpShareServer {
 
     private java.util.List<NanoHTTPD> nanoHTTPDs = new ArrayList<>();
     private String hostname;
+
+    private final FileRepository fileRepository = new FileRepositoryImpl();
 
     public NanoHttpShareServer(EventPublisher eventPublisher) {
         this(eventPublisher, new NanoHttpHandlerFactory(eventPublisher));
@@ -126,10 +132,20 @@ public class NanoHttpShareServer implements HttpShareServer {
                                         if ("/".equals(uri)) {
                                             return httpHanderFactory.createRedirectHttpHandler("/index.html");
                                         } else if (uri.length() > 1) {
-                                            if (uri.startsWith("/api")) {
-                                                return httpHanderFactory.createJsonHttpHandler((Object) null);
+                                            String[] split = uri.split("/");
+                                            if ("api".equals(split[1])) {
+                                                if ("file".equals(split[2])) {
+                                                    if (split.length == 3) {
+                                                        logger.info("ShowAllFiles");
+                                                        List<FileItem> all = this.getFileRepository().getAll();
+                                                        return httpHanderFactory.createJsonHttpHandler(all);
+                                                    } else {
+                                                        return httpHanderFactory.createJsonHttpHandler((Object) null);
+                                                    }
+                                                } else {
+                                                    return httpHanderFactory.createJsonHttpHandler((Object) null);
+                                                }
                                             } else {
-                                                String[] split = uri.split("/");
                                                 String fileName = split[split.length - 1];
                                                 logger.info("{}:{}/ {}", this.getHostname(), this.getMyPort(), fileName);
                                                 if ("favicon.ico".equalsIgnoreCase(fileName)) {
@@ -165,6 +181,7 @@ public class NanoHttpShareServer implements HttpShareServer {
         nanoHTTPDs.stream().forEach(n -> {
             logger.info("Starting on " + n.getHostname() + ":" + n.getMyPort());
             try {
+                n.setFileRepository(fileRepository);
                 n.setAsyncRunner(new BoundRunner(Executors.newFixedThreadPool(N_THREADS)));
                 n.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
             } catch (IOException e) {

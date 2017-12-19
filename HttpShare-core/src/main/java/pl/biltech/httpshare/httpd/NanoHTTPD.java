@@ -42,6 +42,7 @@ import pl.biltech.httpshare.httpd.runner.impl.DefaultAsyncRunner;
 import pl.biltech.httpshare.httpd.socket.ServerSocketFactory;
 import pl.biltech.httpshare.httpd.socket.impl.DefaultServerSocketFactory;
 import pl.biltech.httpshare.httpd.socket.impl.SecureServerSocketFactory;
+import pl.biltech.httpshare.repository.FileRepository;
 import pl.biltech.httpshare.util.NetworkUtil;
 
 import javax.net.ssl.*;
@@ -159,6 +160,7 @@ public abstract class NanoHTTPD {
      * Hashtable mapping (String)FILENAME_EXTENSION -> (String)MIME_TYPE
      */
     protected static Map<String, String> MIME_TYPES;
+    private FileRepository fileRepository;
 
     public static Map<String, String> mimeTypes() {
         if (MIME_TYPES == null) {
@@ -625,5 +627,13 @@ public abstract class NanoHTTPD {
 
     public void setMyServerSocket(ServerSocket myServerSocket) {
         this.myServerSocket = myServerSocket;
+    }
+
+    public void setFileRepository(FileRepository fileRepository) {
+        this.fileRepository = fileRepository;
+    }
+
+    public FileRepository getFileRepository() {
+        return fileRepository;
     }
 }

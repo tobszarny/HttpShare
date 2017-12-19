@@ -3,13 +3,21 @@ package pl.biltech.httpshare.repository.impl;
 import pl.biltech.httpshare.repository.FileRepository;
 import pl.biltech.httpshare.repository.model.FileItem;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class FileRepositoryImpl implements FileRepository {
     private final Map<UUID, FileItem> repositoryStore = new LinkedHashMap<>();
+
+    @Override
+    public FileItem get(String id) {
+        UUID uuid = UUID.fromString(id);
+        return repositoryStore.get(uuid);
+    }
+
+    @Override
+    public List<FileItem> getAll() {
+        return new ArrayList<>(repositoryStore.values());
+    }
 
     @Override
     public void add(FileItem fileItem) {

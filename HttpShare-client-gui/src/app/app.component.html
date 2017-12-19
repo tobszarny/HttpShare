@@ -15,9 +15,11 @@
   </div>
 </div>
 <div>
-  <h2>Here are some other for you to download: </h2>
-  <div>
-    <div class="file" *ngFor="let file of getFiles().items;">
+  <div style="width: 100%; position: center; margin: auto; clear: right;">
+    <h2>Here are some other for you to download: </h2>
+  </div>
+  <div style="position: center; width: 90%; margin: auto;">
+    <div class="file" *ngFor="let file of getFiles();">
       <a href="{{file.url}}">{{file.id}}</a>
     </div>
   </div>

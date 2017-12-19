@@ -6,6 +6,10 @@ import java.util.List;
 import java.util.UUID;
 
 public interface FileRepository {
+    FileItem get(String id);
+
+    List<FileItem> getAll();
+
     void add(FileItem fileItem);
 
     void addAll(List<FileItem> fileItems);

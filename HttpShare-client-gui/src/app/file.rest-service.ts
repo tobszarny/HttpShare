@@ -1,6 +1,5 @@
 import {Injectable} from '@angular/core';
 import {FileItemImpl} from "./file-item-impl.class";
-import {FileItemsImpl} from "./file-items-impl.class";
 
 
 @Injectable()
@@ -17,9 +16,7 @@ export class FileRestService {
       new FileItemImpl('ma', false, false, 'ma'),
       new FileItemImpl('ale', false, false, 'ale')];
 
-    var fileItems: FileItems = new FileItemsImpl(files);
-
-    return fileItems;
+    return files;
 
   }
 }

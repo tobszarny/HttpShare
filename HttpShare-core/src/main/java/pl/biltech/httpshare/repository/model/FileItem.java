@@ -4,6 +4,7 @@ import java.util.UUID;
 
 public class FileItem {
     private final UUID id;
+    private String name;
     private boolean removable;
     private boolean persistentDownload;
     private String url;
@@ -38,6 +39,14 @@ public class FileItem {
 
     public UUID getId() {
         return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public FileItem withRemovable(boolean removable) {
