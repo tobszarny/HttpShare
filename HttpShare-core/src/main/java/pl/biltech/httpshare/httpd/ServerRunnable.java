@@ -33,7 +33,6 @@ public class ServerRunnable implements Runnable {
             ServerSocket serverSocket = nanoHTTPD.getServerSocketFactory().create();
             serverSocket.setReuseAddress(true);
             nanoHTTPD.setMyServerSocket(serverSocket);
-            //nanoHTTPD.getMyServerSocket().bind(nanoHTTPD.getHostname() != null ? new InetSocketAddress(nanoHTTPD.getHostname(), nanoHTTPD.getMyPort()) : new InetSocketAddress(nanoHTTPD.getMyPort()));
             hasBinded = true;
         } catch (IOException e) {
             this.bindException = e;

@@ -156,6 +156,8 @@ public class NanoHttpShareServer implements HttpShareServer {
                                                 logger.info("{}:{}/ {}", this.getHostname(), this.getMyPort(), fileName);
                                                 if ("favicon.ico".equalsIgnoreCase(fileName)) {
                                                     return getFavicon();
+                                                } else if ("config.js".equalsIgnoreCase(fileName)) {
+                                                    return httpHanderFactory.createJsonHttpHandler("window.CONFIG = { apiUrl:'" + buildServerUrl() + "'};");
                                                 } else {
                                                     return serveClientUIFiles(fileName);
                                                 }
@@ -163,7 +165,7 @@ public class NanoHttpShareServer implements HttpShareServer {
 
                                         }
                                     } catch (Exception e) {
-                                        logger.error("Problem handling request", e);
+                                        logger.error("Problem handling request " + uri, e);
                                         return httpHanderFactory.createErrorHttpHandler(e);
                                     }
                                     return httpHanderFactory.createErrorHttpHandler("");
