@@ -1,5 +1,6 @@
 package pl.biltech.httpshare.repository.model;
 
+import java.io.File;
 import java.util.UUID;
 
 public class FileItem {
@@ -7,6 +8,7 @@ public class FileItem {
     private String name;
     private boolean removable;
     private boolean persistentDownload;
+    private File file;
     private String url;
 
     public FileItem() {
@@ -49,6 +51,14 @@ public class FileItem {
         this.name = name;
     }
 
+    public File getFile() {
+        return file;
+    }
+
+    public void setFile(File file) {
+        this.file = file;
+    }
+
     public FileItem withRemovable(boolean removable) {
         this.removable = removable;
         return this;
@@ -58,6 +68,18 @@ public class FileItem {
         this.persistentDownload = persistentDownload;
         return this;
     }
+
+    public FileItem withFile(File file) {
+        this.file = file;
+        this.name = file.getName();
+        return this;
+    }
+
+    public FileItem withName(String name) {
+        this.name = name;
+        return this;
+    }
+
 
     public FileItem withUrl(String url) {
         this.url = url;

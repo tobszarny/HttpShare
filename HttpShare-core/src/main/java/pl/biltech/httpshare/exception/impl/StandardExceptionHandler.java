@@ -1,9 +1,8 @@
 package pl.biltech.httpshare.exception.impl;
 
 import org.slf4j.Logger;
-
-import pl.biltech.httpshare.event.EventPublisher;
-import pl.biltech.httpshare.event.impl.ErrorEvent;
+import pl.biltech.httpshare.eventbus.event.impl.ErrorEvent;
+import pl.biltech.httpshare.eventbus.publisher.EventPublisher;
 import pl.biltech.httpshare.exception.ExceptionHandler;
 
 public class StandardExceptionHandler implements ExceptionHandler {

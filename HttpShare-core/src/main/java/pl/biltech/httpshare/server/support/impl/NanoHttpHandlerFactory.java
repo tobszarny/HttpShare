@@ -2,7 +2,7 @@ package pl.biltech.httpshare.server.support.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import pl.biltech.httpshare.event.EventPublisher;
+import pl.biltech.httpshare.eventbus.publisher.EventPublisher;
 import pl.biltech.httpshare.httpd.http.Response;
 import pl.biltech.httpshare.httpd.http.ResponseStatus;
 import pl.biltech.httpshare.repository.FileRepository;

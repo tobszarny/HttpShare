@@ -3,10 +3,14 @@ package pl.biltech.httpshare.ui.awt.element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.biltech.httpshare.HttpShare;
-import pl.biltech.httpshare.event.Event;
-import pl.biltech.httpshare.event.EventManager;
-import pl.biltech.httpshare.event.EventSubscriber;
-import pl.biltech.httpshare.event.impl.*;
+import pl.biltech.httpshare.eventbus.event.Event;
+import pl.biltech.httpshare.eventbus.manager.EventManager;
+import pl.biltech.httpshare.eventbus.manager.impl.AsyncEventManager;
+import pl.biltech.httpshare.eventbus.subscriber.EventSubscriber;
+import pl.biltech.httpshare.eventbus.subscriber.impl.DownloadFinishedEventSubscriber;
+import pl.biltech.httpshare.eventbus.subscriber.impl.DownloadProgressNotificationEventSubscriber;
+import pl.biltech.httpshare.eventbus.subscriber.impl.DownloadStartedEventSubscriber;
+import pl.biltech.httpshare.eventbus.subscriber.impl.DownloadWaitingForRequestEventSubscriber;
 import pl.biltech.httpshare.ui.awt.action.AddFileActionListener;
 import pl.biltech.httpshare.ui.awt.action.ExitActionListener;
 
@@ -57,41 +61,11 @@ public class Tray implements AddFileActionListener, ExitActionListener {
 
     private List<EventSubscriber<? extends Event>> createEventSubscribers() {
         List<EventSubscriber<? extends Event>> subscribers = new ArrayList<EventSubscriber<? extends Event>>();
-        subscribers.add((EventSubscriber<DownloadStartedEvent>) event -> {
-            trayIcon.displayInfo("Download started", event.getMessage());
-            trayIcon.iconChangeAction(Icon.DOWNLOADING);
-        });
-        subscribers.add((EventSubscriber<DownloadFinishedEvent>) event -> {
-            trayIcon.displayInfo("Download finished", event.getMessage());
-            trayIcon.iconChangeAction(Icon.DEFAULT);
-        });
-        subscribers.add((EventSubscriber<DownloadProgressNotificationEvent>) event ->
-                trayIcon.displayInfo("Download in progress", "" + getPercentAsTextProgressBar(event.getPercent())));
-        subscribers.add((EventSubscriber<DownloadWaitingForRequestEvent>) event ->
-                trayIcon.displayInfo("File ready to download", "Download url: " + event.getUrl()));
+        subscribers.add(new DownloadStartedEventSubscriber(trayIcon));
+        subscribers.add(new DownloadFinishedEventSubscriber(trayIcon));
+        subscribers.add(new DownloadProgressNotificationEventSubscriber(trayIcon));
+        subscribers.add(new DownloadWaitingForRequestEventSubscriber(trayIcon));
         return subscribers;
-    }
-
-    /**
-     * @param percent
-     * @return String with simple progress bar, sample for 88
-     * <p>
-     * <pre>
-     * [||||||||||||||||||||||||||||||||||||||||||||      ] 88%
-     * </pre>
-     */
-    private String getPercentAsTextProgressBar(int percent) {
-        int maxChar = percent / 2;
-        StringBuilder sb = new StringBuilder("[");
-        for (int i = 1; i <= 50; i++) {
-            if (i <= maxChar) {
-                sb.append("|");
-            } else {
-                sb.append(" ");
-            }
-        }
-        sb.append("] ").append(percent).append("%");
-        return sb.toString();
     }
 
 //	public static void main(String[] args) {

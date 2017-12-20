@@ -3,8 +3,8 @@ package pl.biltech.httpshare.server.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.biltech.httpshare.annotation.VisibleForTesting;
-import pl.biltech.httpshare.event.EventPublisher;
-import pl.biltech.httpshare.event.impl.DownloadWaitingForRequestEvent;
+import pl.biltech.httpshare.eventbus.event.impl.DownloadWaitingForRequestEvent;
+import pl.biltech.httpshare.eventbus.publisher.EventPublisher;
 import pl.biltech.httpshare.httpd.NanoHTTPD;
 import pl.biltech.httpshare.httpd.http.IHTTPSession;
 import pl.biltech.httpshare.httpd.http.Method;
@@ -100,8 +100,14 @@ public class NanoHttpShareServer implements HttpShareServer {
         assertNotNull(file);
         logger.debug("Adding file to download: {}", file.getAbsolutePath());
 
-
         url = buildFileUrl(file);
+        fileRepository.add(new FileItem()
+                .withPersistentDownload(false)
+                .withRemovable(false)
+                .withUrl(url)
+                .withFile(file));
+
+
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(new StringSelection(url), (clipboard1, contents) -> {
             // wywolane w momencie gdy ktos nadpisze schowek

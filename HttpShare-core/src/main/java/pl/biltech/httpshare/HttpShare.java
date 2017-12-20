@@ -2,8 +2,8 @@ package pl.biltech.httpshare;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.biltech.httpshare.event.EventPublisher;
-import pl.biltech.httpshare.event.impl.AsyncEventManager;
+import pl.biltech.httpshare.eventbus.manager.impl.AsyncEventManager;
+import pl.biltech.httpshare.eventbus.publisher.EventPublisher;
 import pl.biltech.httpshare.exception.ExceptionHandler;
 import pl.biltech.httpshare.exception.impl.StandardExceptionHandler;
 import pl.biltech.httpshare.server.HttpShareServer;
