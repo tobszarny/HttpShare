@@ -10,6 +10,7 @@ export class FileRestService {
 
   constructor(private http: HttpClient, private config: ConfigRef) {
     console.log("ngOnInit");
+    this.reloadCache();
     var that = this;
     setInterval(() => {
       that.reloadCache();

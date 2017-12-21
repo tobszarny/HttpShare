@@ -1,7 +1,18 @@
+
+.file {
+  border-radius: 5px;
+  padding-left: 10px;
+}
 .file:nth-child(odd) {
   background-color: #33acfe;
 }
 
 .file:nth-child(even) {
   background-color: #38d9fe;
+}
+
+.mainPane {
+  border-radius: 25px;
+  background: limegreen;
+  padding: 20px;
 }
