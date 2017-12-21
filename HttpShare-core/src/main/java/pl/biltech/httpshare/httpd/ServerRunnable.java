@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -14,6 +13,7 @@ import java.net.Socket;
 public class ServerRunnable implements Runnable {
 
     private static final Logger LOG = LoggerFactory.getLogger(ServerRunnable.class);
+    private final InetAddressMetaRepository inetAddressMetaRepository;
 
     private NanoHTTPD nanoHTTPD;
     private final int timeout;
@@ -22,15 +22,17 @@ public class ServerRunnable implements Runnable {
 
     private boolean hasBinded = false;
 
-    ServerRunnable(NanoHTTPD nanoHTTPD, int timeout) {
+    ServerRunnable(NanoHTTPD nanoHTTPD, int timeout, InetAddressMetaRepository inetAddressMetaRepository) {
         this.nanoHTTPD = nanoHTTPD;
         this.timeout = timeout;
+        this.inetAddressMetaRepository = inetAddressMetaRepository;
     }
 
     @Override
     public void run() {
+        ServerSocket serverSocket = null;
         try {
-            ServerSocket serverSocket = nanoHTTPD.getServerSocketFactory().create();
+            serverSocket = nanoHTTPD.getServerSocketFactory().create();
             serverSocket.setReuseAddress(true);
             nanoHTTPD.setMyServerSocket(serverSocket);
             hasBinded = true;
@@ -38,18 +40,27 @@ public class ServerRunnable implements Runnable {
             this.bindException = e;
             return;
         }
+
         do {
             try {
-                final Socket finalAccept = nanoHTTPD.getMyServerSocket().accept();
-                if (this.timeout > 0) {
-                    finalAccept.setSoTimeout(this.timeout);
+                final Socket finalAcceptedSocket = nanoHTTPD.acceptServerSocketConnection();
+                InetAddressMeta inetAddressMeta = null;
+                if (inetAddressMetaRepository.contains(finalAcceptedSocket.getInetAddress().getHostAddress())) {
+                    inetAddressMeta = inetAddressMetaRepository.get(finalAcceptedSocket.getInetAddress().getHostAddress());
+                } else {
+                    inetAddressMeta = inetAddressMetaRepository.addFromInetAddress(finalAcceptedSocket.getInetAddress());
                 }
-                final InputStream inputStream = finalAccept.getInputStream();
-                nanoHTTPD.asyncRunner.exec(nanoHTTPD.createClientHandler(finalAccept, inputStream));
+
+                nanoHTTPD.setInetAddressMeta(inetAddressMeta);
+
+                if (this.timeout > 0) {
+                    finalAcceptedSocket.setSoTimeout(this.timeout);
+                }
+                nanoHTTPD.asynchExec();
             } catch (IOException e) {
                 LOG.debug("Communication with the client broken", e);
             }
-        } while (!nanoHTTPD.getMyServerSocket().isClosed());
+        } while (!serverSocket.isClosed());
     }
 
     public boolean isBinded() {

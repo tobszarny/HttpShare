@@ -31,23 +31,20 @@ public class NanoHttpHandlerFactory implements HttpHandlerFactory<Response> {
 
     @Override
     public Response createRedirectHttpHandler(String redirectUrl) {
-        Response r = newFixedLengthResponse(ResponseStatus.REDIRECT, MimeUtil.TEXT_HTML, "");
-        r.addHeader("Location", redirectUrl);
-        return r;
+        Response redirect = newFixedLengthResponse(ResponseStatus.REDIRECT, MimeUtil.TEXT_HTML, "");
+        redirect.addHeader("Location", redirectUrl);
+        return redirect;
     }
 
     @Override
-    public Response createDownloadHttpHandler(File file) {
+    public Response createDownloadHttpHandler(File file) throws Exception {
         return createDownloadHttpHandler(file, MimeUtil.APPLICATION_OCTET_STREAM);
     }
 
     @Override
-    public Response createDownloadHttpHandler(File file, String mime) {
+    public Response createDownloadHttpHandler(File file, String mime) throws Exception {
         FileInputStream fis = null;
-        try {
-            fis = new FileInputStream(file);
-        } catch (FileNotFoundException ex) {
-        }
+        fis = new FileInputStream(file);
         return newFixedLengthResponse(ResponseStatus.OK, mime, fis, file.length());
     }
 
@@ -85,22 +82,22 @@ public class NanoHttpHandlerFactory implements HttpHandlerFactory<Response> {
     }
 
     @Override
-    public Response createResourceFolderContentHttpHandler(String folder, String fileName) {
+    public Response createResourceFolderContentHttpHandler(String folder, String fileName) throws Exception {
         ClassLoader classLoader = getClass().getClassLoader();
         File file = new File(classLoader.getResource(folder + "/" + fileName).getFile());
         return createFileDownloadHttpHandler(file);
     }
 
     @Override
-    public Response createFolderContentHttpHandler(String folder, String fileName) {
+    public Response createFolderContentHttpHandler(String folder, String fileName) throws Exception {
         File file = new File(folder + "/" + fileName);
         return createFileDownloadHttpHandler(file);
     }
 
     @Override
-    public Response createFileDownloadHttpHandler(File file) {
+    public Response createFileDownloadHttpHandler(File file) throws Exception {
         if (file == null || !file.exists()) {
-            return createErrorHttpHandler(new FileNotFoundException(file == null ? "null" : file.getAbsolutePath()));
+            throw new FileNotFoundException(file == null ? "null" : file.getAbsolutePath());
         }
         String mime = classifyMimeAfterFileName(file.getName());
         return createDownloadHttpHandler(file, mime);

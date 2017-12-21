@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import pl.biltech.httpshare.annotation.VisibleForTesting;
 import pl.biltech.httpshare.eventbus.event.impl.DownloadWaitingForRequestEvent;
 import pl.biltech.httpshare.eventbus.publisher.EventPublisher;
+import pl.biltech.httpshare.httpd.InetAddressMetaRepository;
 import pl.biltech.httpshare.httpd.NanoHTTPD;
 import pl.biltech.httpshare.httpd.http.IHTTPSession;
 import pl.biltech.httpshare.httpd.http.Method;
@@ -56,6 +57,7 @@ public class NanoHttpShareServer implements HttpShareServer {
     private String hostname;
 
     private final FileRepository fileRepository = new FileRepositoryImpl();
+    private final InetAddressMetaRepository inetAddressMetaRepository = new InetAddressMetaRepository();
 
     public NanoHttpShareServer(EventPublisher eventPublisher) {
         this(eventPublisher, new NanoHttpHandlerFactory(eventPublisher));
@@ -126,7 +128,7 @@ public class NanoHttpShareServer implements HttpShareServer {
         Arrays.stream(allByName)
                 .filter(f -> f.isSiteLocalAddress())
                 .forEach(inetAddress -> {
-                            NanoHTTPD instance = new NanoHTTPD(inetAddress.getHostAddress(), port) {
+                    NanoHTTPD instance = new NanoHTTPD(inetAddress.getHostAddress(), port, inetAddressMetaRepository) {
 
                                 @Override
                                 public Response serve(IHTTPSession session) {
@@ -146,6 +148,9 @@ public class NanoHttpShareServer implements HttpShareServer {
                                                         logger.info("ShowAllFiles");
                                                         List<FileItem> all = this.getFileRepository().getAll();
                                                         return httpHanderFactory.createJsonHttpHandler(all);
+                                                    } else if (split.length == 4) {
+                                                        FileItem fileItem = fileRepository.get(split[3]);
+                                                        return httpHanderFactory.createDownloadHttpHandler(fileItem.getFile());
                                                     } else {
                                                         return httpHanderFactory.createJsonHttpHandler((Object) null);
                                                     }
@@ -172,15 +177,15 @@ public class NanoHttpShareServer implements HttpShareServer {
                                     return httpHanderFactory.createErrorHttpHandler("");
                                 }
 
-                                private Response serveClientUIFiles(String fileName) {
+                        private Response serveClientUIFiles(String fileName) throws Exception {
                                     return httpHanderFactory.createFolderContentHttpHandler("C:\\git-ws\\prv\\HttpShare\\HttpShare-client-gui\\dist", fileName);
                                 }
 
-                                private Response serveResourceClientUIFiles(String fileName) {
+                        private Response serveResourceClientUIFiles(String fileName) throws Exception {
                                     return httpHanderFactory.createResourceFolderContentHttpHandler("dist", fileName);
                                 }
 
-                                private Response getFavicon() {
+                        private Response getFavicon() throws Exception {
                                     ClassLoader classLoader = getClass().getClassLoader();
                                     File file = new File(classLoader.getResource("images/ico.png").getFile());
                                     return httpHanderFactory.createDownloadHttpHandler(file, MimeUtil.IMAGE_PNG);

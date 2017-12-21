@@ -2,6 +2,7 @@ package pl.biltech.httpshare.httpd.runner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.biltech.httpshare.httpd.InetAddressMeta;
 import pl.biltech.httpshare.httpd.NanoHTTPD;
 import pl.biltech.httpshare.httpd.http.HTTPSession;
 import pl.biltech.httpshare.httpd.manager.file.TempFileManager;
@@ -22,16 +23,18 @@ public class ClientHandler implements Runnable {
     private static final Logger LOG = LoggerFactory.getLogger(ClientHandler.class);
 
     private final TempFileManagerFactory tempFileManagerFactory;
+    private InetAddressMeta inetAddressMeta;
     private NanoHTTPD nanoHTTPD;
     private final InputStream inputStream;
 
     private final Socket acceptSocket;
 
-    public ClientHandler(NanoHTTPD nanoHTTPD, InputStream inputStream, Socket acceptSocket, TempFileManagerFactory tempFileManagerFactory) {
+    public ClientHandler(NanoHTTPD nanoHTTPD, InputStream inputStream, Socket acceptSocket, TempFileManagerFactory tempFileManagerFactory, InetAddressMeta inetAddressMeta) {
         this.nanoHTTPD = nanoHTTPD;
         this.inputStream = inputStream;
         this.acceptSocket = acceptSocket;
         this.tempFileManagerFactory = tempFileManagerFactory;
+        this.inetAddressMeta = inetAddressMeta;
     }
 
     public void close() {
@@ -45,7 +48,7 @@ public class ClientHandler implements Runnable {
         try {
             outputStream = this.acceptSocket.getOutputStream();
             TempFileManager tempFileManager = tempFileManagerFactory.create();
-            HTTPSession session = new HTTPSession(nanoHTTPD, tempFileManager, this.inputStream, outputStream, this.acceptSocket.getInetAddress());
+            HTTPSession session = new HTTPSession(nanoHTTPD, tempFileManager, this.inputStream, outputStream, inetAddressMeta);
             while (!this.acceptSocket.isClosed()) {
                 session.execute();
             }

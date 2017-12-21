@@ -2,6 +2,7 @@ package pl.biltech.httpshare.httpd.http;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.biltech.httpshare.httpd.InetAddressMeta;
 import pl.biltech.httpshare.httpd.NanoHTTPD;
 import pl.biltech.httpshare.httpd.manager.file.TempFile;
 import pl.biltech.httpshare.httpd.manager.file.TempFileManager;
@@ -9,7 +10,6 @@ import pl.biltech.httpshare.util.NetworkUtil;
 
 import javax.net.ssl.SSLException;
 import java.io.*;
-import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
@@ -32,6 +32,7 @@ public class HTTPSession implements IHTTPSession {
     public static final int BUFSIZE = 8192;
 
     public static final int MAX_HEADER_SIZE = 1024;
+    private InetAddressMeta inetAddressMeta;
 
     private NanoHTTPD nanoHTTPD;
     private final TempFileManager tempFileManager;
@@ -56,26 +57,14 @@ public class HTTPSession implements IHTTPSession {
 
     private String queryParameterString;
 
-    private String remoteIp;
-
-    private String remoteHostname;
-
     private String protocolVersion;
 
-    public HTTPSession(NanoHTTPD nanoHTTPD, TempFileManager tempFileManager, InputStream inputStream, OutputStream outputStream) {
+    public HTTPSession(NanoHTTPD nanoHTTPD, TempFileManager tempFileManager, InputStream inputStream, OutputStream outputStream, InetAddressMeta inetAddressMeta) {
         this.nanoHTTPD = nanoHTTPD;
         this.tempFileManager = tempFileManager;
         this.inputStream = new BufferedInputStream(inputStream, HTTPSession.BUFSIZE);
         this.outputStream = outputStream;
-    }
-
-    public HTTPSession(NanoHTTPD nanoHTTPD, TempFileManager tempFileManager, InputStream inputStream, OutputStream outputStream, InetAddress inetAddress) {
-        this.nanoHTTPD = nanoHTTPD;
-        this.tempFileManager = tempFileManager;
-        this.inputStream = new BufferedInputStream(inputStream, HTTPSession.BUFSIZE);
-        this.outputStream = outputStream;
-        this.remoteIp = inetAddress.isLoopbackAddress() || inetAddress.isAnyLocalAddress() ? "127.0.0.1" : inetAddress.getHostAddress().toString();
-        this.remoteHostname = inetAddress.isLoopbackAddress() || inetAddress.isAnyLocalAddress() ? "localhost" : inetAddress.getHostName().toString();
+        this.inetAddressMeta = inetAddressMeta;
         this.headers = new HashMap<String, String>();
     }
 
@@ -270,6 +259,8 @@ public class HTTPSession implements IHTTPSession {
 
     @Override
     public void execute() throws IOException {
+        long ts = System.currentTimeMillis();
+        LOG.debug("execute() start");
         Response r = null;
         try {
             // Read the first 8192 bytes.
@@ -326,9 +317,9 @@ public class HTTPSession implements IHTTPSession {
             Map<String, String> pre = new HashMap<String, String>();
             decodeHeader(hin, pre, this.parms, this.headers);
 
-            if (null != this.remoteIp) {
-                this.headers.put("remote-addr", this.remoteIp);
-                this.headers.put("http-client-ip", this.remoteIp);
+            if (null != this.inetAddressMeta.getIp()) {
+                this.headers.put("remote-addr", this.inetAddressMeta.getIp());
+                this.headers.put("http-client-ip", this.inetAddressMeta.getIp());
             }
 
             this.method = Method.lookup(pre.get("method"));
@@ -389,6 +380,7 @@ public class HTTPSession implements IHTTPSession {
             NetworkUtil.safeClose(r);
             this.tempFileManager.clear();
         }
+        LOG.debug("execute() stop {}", System.currentTimeMillis() - ts);
     }
 
     /**
@@ -611,11 +603,11 @@ public class HTTPSession implements IHTTPSession {
 
     @Override
     public String getRemoteIpAddress() {
-        return this.remoteIp;
+        return this.inetAddressMeta.getIp();
     }
 
     @Override
     public String getRemoteHostName() {
-        return this.remoteHostname;
+        return this.inetAddressMeta.getHostname();
     }
 }

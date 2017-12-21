@@ -89,9 +89,9 @@ public class StandardHttpShareServer implements HttpShareServer {
 		assertNotNull(httpServer);
 		logger.debug("Adding file to download: {}", file.getAbsolutePath());
 
-		String relativeDownloadPath = "/" + file.getName();
-		httpServer.createContext("/", httpHanderFactory.createRedirectHttpHandler(relativeDownloadPath));
-		httpServer.createContext(relativeDownloadPath, httpHanderFactory.createDownloadHttpHandler(file));
+//		String relativeDownloadPath = "/" + file.getName();
+//		httpServer.createContext("/", httpHanderFactory.createRedirectHttpHandler(relativeDownloadPath));
+//		httpServer.createContext(relativeDownloadPath, httpHanderFactory.createDownloadHttpHandler(file));
 
 		url = buildUrl(file);
 		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();

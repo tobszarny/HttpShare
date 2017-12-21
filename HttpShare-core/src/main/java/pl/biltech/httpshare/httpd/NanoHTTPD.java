@@ -1,37 +1,37 @@
 package pl.biltech.httpshare.httpd;
 
-        /*
-         * #%L
-         * NanoHttpd-Core
-         * %%
-         * Copyright (C) 2012 - 2015 nanohttpd
-         * %%
-         * Redistribution and use in source and binary forms, with or without modification,
-         * are permitted provided that the following conditions are met:
-         *
-         * 1. Redistributions of source code must retain the above copyright notice, this
-         *    list of conditions and the following disclaimer.
-         *
-         * 2. Redistributions in binary form must reproduce the above copyright notice,
-         *    this list of conditions and the following disclaimer in the documentation
-         *    and/or other materials provided with the distribution.
-         *
-         * 3. Neither the name of the nanohttpd nor the names of its contributors
-         *    may be used to endorse or promote products derived from this software without
-         *    specific prior written permission.
-         *
-         * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-         * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-         * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-         * IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
-         * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-         * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-         * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-         * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
-         * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
-         * OF THE POSSIBILITY OF SUCH DAMAGE.
-         * #L%
-         */
+/*
+ * #%L
+ * NanoHttpd-Core
+ * %%
+ * Copyright (C) 2012 - 2015 nanohttpd
+ * %%
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * 3. Neither the name of the nanohttpd nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software without
+ *    specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
+ * #L%
+ */
 
 import pl.biltech.httpshare.httpd.http.*;
 import pl.biltech.httpshare.httpd.manager.file.TempFileManagerFactory;
@@ -161,6 +161,9 @@ public abstract class NanoHTTPD {
      */
     protected static Map<String, String> MIME_TYPES;
     private FileRepository fileRepository;
+    private Socket acceptedServerSocket;
+    private InetAddressMeta inetAddressMeta;
+    private InetAddressMetaRepository inetAddressMetaRepository;
 
     public static Map<String, String> mimeTypes() {
         if (MIME_TYPES == null) {
@@ -294,8 +297,9 @@ public abstract class NanoHTTPD {
     /**
      * Constructs an HTTP server on given port.
      */
-    public NanoHTTPD(int port) {
-        this(null, port);
+    public NanoHTTPD(String hostAddress, int port, InetAddressMetaRepository inetAddressMetaRepository) {
+        this(hostAddress, port);
+        this.inetAddressMetaRepository = inetAddressMetaRepository;
     }
 
     // -------------------------------------------------------------------------------
@@ -332,8 +336,13 @@ public abstract class NanoHTTPD {
      * @return the client handler
      */
     protected ClientHandler createClientHandler(final Socket finalAccept, final InputStream inputStream) {
-        return new ClientHandler(this, inputStream, finalAccept, tempFileManagerFactory);
+        return new ClientHandler(this, inputStream, finalAccept, tempFileManagerFactory, inetAddressMeta);
     }
+
+    protected ClientHandler createClientHandler() throws IOException {
+        return new ClientHandler(this, acceptedServerSocket.getInputStream(), acceptedServerSocket, tempFileManagerFactory, inetAddressMeta);
+    }
+
 
     /**
      * Instantiate the server runnable, can be overwritten by subclasses to
@@ -343,7 +352,7 @@ public abstract class NanoHTTPD {
      * @return the server runnable.
      */
     protected ServerRunnable createServerRunnable(final int timeout) {
-        return new ServerRunnable(this, timeout);
+        return new ServerRunnable(this, timeout, inetAddressMetaRepository);
     }
 
     /**
@@ -635,5 +644,18 @@ public abstract class NanoHTTPD {
 
     public FileRepository getFileRepository() {
         return fileRepository;
+    }
+
+    public Socket acceptServerSocketConnection() throws IOException {
+        this.acceptedServerSocket = this.myServerSocket.accept();
+        return this.acceptedServerSocket;
+    }
+
+    public void asynchExec() throws IOException {
+        asyncRunner.exec(this.createClientHandler());
+    }
+
+    public void setInetAddressMeta(InetAddressMeta inetAddressMeta) {
+        this.inetAddressMeta = inetAddressMeta;
     }
 }
