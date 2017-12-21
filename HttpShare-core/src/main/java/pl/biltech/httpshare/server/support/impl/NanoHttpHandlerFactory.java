@@ -15,7 +15,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.IntStream;
 
 import static pl.biltech.httpshare.httpd.NanoHTTPD.newFixedLengthResponse;
 import static pl.biltech.httpshare.util.MimeUtil.classifyMimeAfterFileName;
@@ -72,10 +71,7 @@ public class NanoHttpHandlerFactory implements HttpHandlerFactory<Response> {
         ObjectMapper om = new ObjectMapper();
         List<FileItem> list = new ArrayList<>();
         if (object == null) {
-            IntStream.range(1, 7).forEach(i -> list.add(new FileItem()
-                    .withPersistentDownload(true)
-                    .withRemovable(false)
-                    .withUrl("someUrl-" + i)));
+            return createJsonHttpHandler("{}");
         } else {
             if (List.class.isAssignableFrom(object.getClass())) {
                 List objects = (List) object;
@@ -89,12 +85,25 @@ public class NanoHttpHandlerFactory implements HttpHandlerFactory<Response> {
     }
 
     @Override
-    public Response createFolderContentHttpHandler(String folder, String fileName) {
+    public Response createResourceFolderContentHttpHandler(String folder, String fileName) {
         ClassLoader classLoader = getClass().getClassLoader();
-        String mime = classifyMimeAfterFileName(fileName);
         File file = new File(classLoader.getResource(folder + "/" + fileName).getFile());
-        return createDownloadHttpHandler(file, mime);
+        return createFileDownloadHttpHandler(file);
     }
 
+    @Override
+    public Response createFolderContentHttpHandler(String folder, String fileName) {
+        File file = new File(folder + "/" + fileName);
+        return createFileDownloadHttpHandler(file);
+    }
+
+    @Override
+    public Response createFileDownloadHttpHandler(File file) {
+        if (file == null || !file.exists()) {
+            return createErrorHttpHandler(new FileNotFoundException(file == null ? "null" : file.getAbsolutePath()));
+        }
+        String mime = classifyMimeAfterFileName(file.getName());
+        return createDownloadHttpHandler(file, mime);
+    }
 
 }

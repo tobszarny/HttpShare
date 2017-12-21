@@ -35,9 +35,9 @@ public class FileItem {
         return url;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
-    }
+//    public void setUrl(String url) {
+//        this.url = url;
+//    }
 
     public UUID getId() {
         return id;
@@ -81,8 +81,8 @@ public class FileItem {
     }
 
 
-    public FileItem withUrl(String url) {
-        this.url = url;
+    public FileItem withServerUrl(String url) {
+        this.url = url + "/api/file/" + this.getId();
         return this;
     }
 }

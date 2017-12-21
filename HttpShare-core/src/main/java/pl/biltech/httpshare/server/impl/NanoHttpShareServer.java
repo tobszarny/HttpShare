@@ -70,11 +70,11 @@ public class NanoHttpShareServer implements HttpShareServer {
 
     private String buildFileUrl(File file) {
         StringBuilder urlBuilder = buildServerUrl();
-        urlBuilder.append("/").append(file.getName());
+        urlBuilder.append("/api/file/").append(file.getName());
         return urlBuilder.toString();
     }
 
-    private StringBuilder buildServerUrl() {
+    protected StringBuilder buildServerUrl() {
         StringBuilder urlBuilder = new StringBuilder("http://").append(this.hostname);
         if (this.port != 80) {
             urlBuilder.append(":").append(this.port);
@@ -100,20 +100,21 @@ public class NanoHttpShareServer implements HttpShareServer {
         assertNotNull(file);
         logger.debug("Adding file to download: {}", file.getAbsolutePath());
 
-        url = buildFileUrl(file);
-        fileRepository.add(new FileItem()
+        FileItem fileItem = new FileItem()
                 .withPersistentDownload(false)
                 .withRemovable(false)
-                .withUrl(url)
-                .withFile(file));
+                .withServerUrl(buildServerUrl().toString())
+                .withFile(file);
+
+        fileRepository.add(fileItem);
 
 
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        clipboard.setContents(new StringSelection(url), (clipboard1, contents) -> {
+        clipboard.setContents(new StringSelection(fileItem.getUrl()), (clipboard1, contents) -> {
             // wywolane w momencie gdy ktos nadpisze schowek
             logger.warn("Lost ownership of clipboard");
         });
-        eventPublisher.publish(new DownloadWaitingForRequestEvent(url));
+        eventPublisher.publish(new DownloadWaitingForRequestEvent(fileItem.getUrl()));
     }
 
     @Override
@@ -153,7 +154,7 @@ public class NanoHttpShareServer implements HttpShareServer {
                                                 }
                                             } else {
                                                 String fileName = split[split.length - 1];
-                                                logger.info("{}:{}/ {}", this.getHostname(), this.getMyPort(), fileName);
+                                                logger.info("{}:{}/{}", this.getHostname(), this.getMyPort(), fileName);
                                                 if ("favicon.ico".equalsIgnoreCase(fileName)) {
                                                     return getFavicon();
                                                 } else if ("config.js".equalsIgnoreCase(fileName)) {
@@ -172,7 +173,11 @@ public class NanoHttpShareServer implements HttpShareServer {
                                 }
 
                                 private Response serveClientUIFiles(String fileName) {
-                                    return httpHanderFactory.createFolderContentHttpHandler("dist", fileName);
+                                    return httpHanderFactory.createFolderContentHttpHandler("C:\\git-ws\\prv\\HttpShare\\HttpShare-client-gui\\dist", fileName);
+                                }
+
+                                private Response serveResourceClientUIFiles(String fileName) {
+                                    return httpHanderFactory.createResourceFolderContentHttpHandler("dist", fileName);
                                 }
 
                                 private Response getFavicon() {

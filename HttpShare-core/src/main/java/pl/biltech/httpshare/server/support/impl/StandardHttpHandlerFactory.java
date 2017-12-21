@@ -95,7 +95,17 @@ public class StandardHttpHandlerFactory implements HttpHandlerFactory<HttpHandle
     }
 
     @Override
+    public HttpHandler createResourceFolderContentHttpHandler(String folder, String fileName) {
+        return null;
+    }
+
+    @Override
     public HttpHandler createFolderContentHttpHandler(String folder, String fileName) {
+        return null;
+    }
+
+    @Override
+    public HttpHandler createFileDownloadHttpHandler(File file) {
         return null;
     }
 }

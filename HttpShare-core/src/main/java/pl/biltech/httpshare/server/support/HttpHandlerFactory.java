@@ -19,5 +19,9 @@ public interface HttpHandlerFactory<R> {
 
 	R createJsonHttpHandler(Object object) throws Exception;
 
-	R createFolderContentHttpHandler(String folder, String fileName);
+    R createResourceFolderContentHttpHandler(String folder, String fileName);
+
+    R createFolderContentHttpHandler(String folderPath, String fileName);
+
+    R createFileDownloadHttpHandler(File file);
 }

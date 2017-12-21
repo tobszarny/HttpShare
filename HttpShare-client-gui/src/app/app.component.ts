@@ -11,7 +11,6 @@ export class AppComponent {
 
   }
 
-  title = 'app';
   files = ['ala', 'ma', 'kota'];
 
   getFiles() {
