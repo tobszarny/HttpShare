@@ -259,8 +259,6 @@ public class HTTPSession implements IHTTPSession {
 
     @Override
     public void execute() throws IOException {
-        long ts = System.currentTimeMillis();
-        LOG.debug("execute() start");
         Response r = null;
         try {
             // Read the first 8192 bytes.
@@ -380,7 +378,6 @@ public class HTTPSession implements IHTTPSession {
             NetworkUtil.safeClose(r);
             this.tempFileManager.clear();
         }
-        LOG.debug("execute() stop {}", System.currentTimeMillis() - ts);
     }
 
     /**

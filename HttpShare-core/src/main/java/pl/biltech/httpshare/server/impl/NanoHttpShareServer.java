@@ -145,8 +145,8 @@ public class NanoHttpShareServer implements HttpShareServer {
                                             if ("api".equals(split[1])) {
                                                 if ("file".equals(split[2])) {
                                                     if (split.length == 3) {
-                                                        logger.info("ShowAllFiles");
                                                         List<FileItem> all = this.getFileRepository().getAll();
+                                                        logger.info("ShowAllFiles #={}", all.size());
                                                         return httpHanderFactory.createJsonHttpHandler(all);
                                                     } else if (split.length == 4) {
                                                         FileItem fileItem = fileRepository.get(split[3]);
