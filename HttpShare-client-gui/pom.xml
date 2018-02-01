@@ -51,14 +51,12 @@
             <version>2.6</version>
             <scope>runtime</scope>
           </dependency>
-          <!-- https://mvnrepository.com/artifact/org.fusesource.jansi/jansi -->
           <dependency>
             <groupId>org.fusesource.jansi</groupId>
             <artifactId>jansi</artifactId>
             <version>1.16</version>
             <scope>runtime</scope>
           </dependency>
-
         </dependencies>
       </plugin>
     </plugins>

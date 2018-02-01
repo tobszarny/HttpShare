@@ -75,11 +75,7 @@ class ConditionDistBuild extends Script {
     leftDir.eachFileRecurse(FileType.FILES) { leftFile ->
       def fileSubPath = leftFile.getAbsolutePath().substring(leftDir.getAbsolutePath().length())
       def rightFile = new File(rightDir, fileSubPath)
-      if (!equalFileContent(leftFile, rightFile)) {
-        outcome = false
-        return outcome
-      }
-
+      outcome &= equalFileContent(leftFile, rightFile)
     }
     return outcome
   }
