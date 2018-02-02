@@ -38,10 +38,14 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     var that = this;
     that.files = that.fileRestService.getFiles();
-    setInterval(() => {
-      that.files = that.fileRestService.getFiles();
-      console.log("File = " + that.files.length);
-    }, 2000);
+    // setInterval(() => {
+    //   that.files = that.fileRestService.getFiles();
+    //   console.log("File = " + that.files.length);
+    // }, 2000);
+  }
+
+  getFiles() {
+    return this.fileRestService.getFiles();
   }
 
 

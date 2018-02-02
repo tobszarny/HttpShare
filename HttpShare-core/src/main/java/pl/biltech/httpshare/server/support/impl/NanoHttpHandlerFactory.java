@@ -13,9 +13,11 @@ import pl.biltech.httpshare.util.MimeUtil;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import static pl.biltech.httpshare.httpd.NanoHTTPD.newChunkedResponse;
 import static pl.biltech.httpshare.httpd.NanoHTTPD.newFixedLengthResponse;
 import static pl.biltech.httpshare.util.MimeUtil.classifyMimeAfterFileName;
 
@@ -46,6 +48,13 @@ public class NanoHttpHandlerFactory implements HttpHandlerFactory<Response> {
         FileInputStream fis = null;
         fis = new FileInputStream(file);
         return newFixedLengthResponse(ResponseStatus.OK, mime, fis, file.length());
+    }
+
+    @Override
+    public Response createDownloadHttpHandler(InputStream stream, String mime) {
+//        FileInputStream fis = null;
+//        fis = new FileInputStream(stream);
+        return newChunkedResponse(ResponseStatus.OK, mime, stream);
     }
 
     @Override
@@ -83,9 +92,13 @@ public class NanoHttpHandlerFactory implements HttpHandlerFactory<Response> {
 
     @Override
     public Response createResourceFolderContentHttpHandler(String folder, String fileName) throws Exception {
+        String mime = classifyMimeAfterFileName(fileName);
         ClassLoader classLoader = getClass().getClassLoader();
-        File file = new File(classLoader.getResource(folder + "/" + fileName).getFile());
-        return createFileDownloadHttpHandler(file);
+        InputStream inputStream = classLoader.getResourceAsStream(folder + "/" + fileName);
+        return createFileStreamDownloadHttpHandler(inputStream, mime);
+//        ClassLoader classLoader = getClass().getClassLoader();
+//        File file = new File(classLoader.getResource(folder + "/" + fileName).getFile());
+//        return createFileDownloadHttpHandler(file);
     }
 
     @Override
@@ -101,6 +114,11 @@ public class NanoHttpHandlerFactory implements HttpHandlerFactory<Response> {
         }
         String mime = classifyMimeAfterFileName(file.getName());
         return createDownloadHttpHandler(file, mime);
+    }
+
+    @Override
+    public Response createFileStreamDownloadHttpHandler(InputStream inputStream, String mime) {
+        return createDownloadHttpHandler(inputStream, mime);
     }
 
 }

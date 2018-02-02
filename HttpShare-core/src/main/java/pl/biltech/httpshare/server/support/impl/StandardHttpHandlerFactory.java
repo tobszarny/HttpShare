@@ -75,6 +75,11 @@ public class StandardHttpHandlerFactory implements HttpHandlerFactory<HttpHandle
     }
 
     @Override
+    public HttpHandler createDownloadHttpHandler(InputStream stream, String mime) {
+        return null;
+    }
+
+    @Override
     public HttpHandler createErrorHttpHandler(Exception e) {
         return null;
     }
@@ -106,6 +111,11 @@ public class StandardHttpHandlerFactory implements HttpHandlerFactory<HttpHandle
 
     @Override
     public HttpHandler createFileDownloadHttpHandler(File file) {
+        return null;
+    }
+
+    @Override
+    public HttpHandler createFileStreamDownloadHttpHandler(InputStream inputStream, String mime) {
         return null;
     }
 }

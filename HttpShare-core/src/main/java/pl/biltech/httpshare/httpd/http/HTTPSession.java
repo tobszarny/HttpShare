@@ -23,24 +23,16 @@ import java.util.regex.Matcher;
 
 public class HTTPSession implements IHTTPSession {
 
-    private static final Logger LOG = LoggerFactory.getLogger(HTTPSession.class);
-
-    private static final int REQUEST_BUFFER_LEN = 512;
-
-    private static final int MEMORY_STORE_LIMIT = 1024;
-
     public static final int BUFSIZE = 8192;
-
     public static final int MAX_HEADER_SIZE = 1024;
-    private InetAddressMeta inetAddressMeta;
-
-    private NanoHTTPD nanoHTTPD;
+    private static final Logger LOG = LoggerFactory.getLogger(HTTPSession.class);
+    private static final int REQUEST_BUFFER_LEN = 512;
+    private static final int MEMORY_STORE_LIMIT = 1024;
     private final TempFileManager tempFileManager;
-
     private final OutputStream outputStream;
-
     private final BufferedInputStream inputStream;
-
+    private InetAddressMeta inetAddressMeta;
+    private NanoHTTPD nanoHTTPD;
     private int splitbyte;
 
     private int rlen;
@@ -337,7 +329,9 @@ public class HTTPSession implements IHTTPSession {
             // TODO: long body_size = getBodySize();
             // TODO: long pos_before_serve = this.inputStream.totalRead()
             // (requires implementation for totalRead())
+//            long s = System.currentTimeMillis();
             r = nanoHTTPD.serve(this);
+//            System.out.println(String.format("Finished in %1$2f", (double)(System.currentTimeMillis()-s)/(double) 1000));
             // TODO: this.inputStream.skip(body_size -
             // (this.inputStream.totalRead() - pos_before_serve))
 

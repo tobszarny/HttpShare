@@ -1,10 +1,10 @@
 <!--<div class="mainPane" [@files]="files.length">-->
 <div class="mainPane">
   <div style="width: 100%; position: center; margin: 0px; clear: right;">
-    <h2>Here are some other for you to download: </h2>
+    <h2>Shared files to download: </h2>
   </div>
   <div style="position: center; width: 90%; margin: auto;">
-    <div class="file" *ngFor="let file of files;">
+    <div class="file" *ngFor="let file of getFiles();">
       <a href="{{file.url}}" download="{{file.name}}">{{file.name}}</a>
     </div>
   </div>

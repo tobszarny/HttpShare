@@ -26,6 +26,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,23 +42,18 @@ import static pl.biltech.httpshare.util.Assert.assertNotNull;
 @SuppressWarnings("restriction")
 public class NanoHttpShareServer implements HttpShareServer {
 
-    private static final Logger logger = LoggerFactory.getLogger(NanoHttpShareServer.class);
-
-    private static final int DEFAULT_START_PORT = 80;
     public static final int N_THREADS = 10;
-
-    private int port = DEFAULT_START_PORT;
-
-    private String url;
-
+    public static final String NG_CLIENT = "ngClient";
+    private static final Logger logger = LoggerFactory.getLogger(NanoHttpShareServer.class);
+    private static final int DEFAULT_START_PORT = 80;
     private final EventPublisher eventPublisher;
     private final HttpHandlerFactory<Response> httpHanderFactory;
-
-    private java.util.List<NanoHTTPD> nanoHTTPDs = new ArrayList<>();
-    private String hostname;
-
     private final FileRepository fileRepository = new FileRepositoryImpl();
     private final InetAddressMetaRepository inetAddressMetaRepository = new InetAddressMetaRepository();
+    private int port = DEFAULT_START_PORT;
+    private String url;
+    private java.util.List<NanoHTTPD> nanoHTTPDs = new ArrayList<>();
+    private String hostname;
 
     public NanoHttpShareServer(EventPublisher eventPublisher) {
         this(eventPublisher, new NanoHttpHandlerFactory(eventPublisher));
@@ -128,7 +124,7 @@ public class NanoHttpShareServer implements HttpShareServer {
         Arrays.stream(allByName)
                 .filter(f -> f.isSiteLocalAddress())
                 .forEach(inetAddress -> {
-                    NanoHTTPD instance = new NanoHTTPD(inetAddress.getHostAddress(), port, inetAddressMetaRepository) {
+                            NanoHTTPD instance = new NanoHTTPD(inetAddress.getHostAddress(), port, inetAddressMetaRepository) {
 
                                 @Override
                                 public Response serve(IHTTPSession session) {
@@ -165,7 +161,8 @@ public class NanoHttpShareServer implements HttpShareServer {
                                                 } else if ("config.js".equalsIgnoreCase(fileName)) {
                                                     return httpHanderFactory.createJsonHttpHandler("window.CONFIG = { apiUrl:'" + buildServerUrl() + "'};");
                                                 } else {
-                                                    return serveClientUIFiles(fileName);
+                                                    return serveResourceClientUIFiles(fileName);
+//                                                    return serveClientUIFiles(fileName);
                                                 }
                                             }
 
@@ -177,18 +174,18 @@ public class NanoHttpShareServer implements HttpShareServer {
                                     return httpHanderFactory.createErrorHttpHandler("");
                                 }
 
-                        private Response serveClientUIFiles(String fileName) throws Exception {
+                                private Response serveClientUIFiles(String fileName) throws Exception {
                                     return httpHanderFactory.createFolderContentHttpHandler("C:\\git-ws\\prv\\HttpShare\\HttpShare-client-gui\\dist", fileName);
                                 }
 
-                        private Response serveResourceClientUIFiles(String fileName) throws Exception {
-                                    return httpHanderFactory.createResourceFolderContentHttpHandler("dist", fileName);
+                                private Response serveResourceClientUIFiles(String fileName) throws Exception {
+                                    return httpHanderFactory.createResourceFolderContentHttpHandler(NG_CLIENT, fileName);
                                 }
 
-                        private Response getFavicon() throws Exception {
+                                private Response getFavicon() throws Exception {
                                     ClassLoader classLoader = getClass().getClassLoader();
-                                    File file = new File(classLoader.getResource("images/ico.png").getFile());
-                                    return httpHanderFactory.createDownloadHttpHandler(file, MimeUtil.IMAGE_PNG);
+                                    InputStream inputStream = classLoader.getResourceAsStream("images/ico.png");
+                                    return httpHanderFactory.createFileStreamDownloadHttpHandler(inputStream, MimeUtil.IMAGE_PNG);
                                 }
                             };
                             instance.setServerSocketFactory(new IPServerSocketFactory(port, inetAddress));

@@ -16,46 +16,39 @@
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>
             </resource>
-            <resource>
-                <directory>target/generated-resources</directory>
-                <filtering>false</filtering>
-                <includes>
-                    <include>*</include>
-                </includes>
-            </resource>
         </resources>
         <plugins>
-            <plugin>
-                <artifactId>exec-maven-plugin</artifactId>
-                <groupId>org.codehaus.mojo</groupId>
-                <executions>
-                    <execution>
-                        <id>Generate client</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <workingDirectory>../HttpShare-client-gui</workingDirectory>
-                            <executable>${env.NODEJS_HOME}/node.exe</executable>
-                            <arguments>
-                                <argument>
-                                    ${env.NODEJS_HOME}/node_modules/npm/bin/npm-cli.js
-                                </argument>
-                                <argument>
-                                    run
-                                </argument>
-                                <argument>
-                                    build-prod
-                                </argument>
-                                <argument>
-                                    --scripts-prepend-node-path=auto
-                                </argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+            <!--<plugin>-->
+            <!--<artifactId>exec-maven-plugin</artifactId>-->
+            <!--<groupId>org.codehaus.mojo</groupId>-->
+            <!--<executions>-->
+            <!--<execution>-->
+            <!--<id>Generate client</id>-->
+            <!--<phase>generate-resources</phase>-->
+            <!--<goals>-->
+            <!--<goal>exec</goal>-->
+            <!--</goals>-->
+            <!--<configuration>-->
+            <!--<workingDirectory>../HttpShare-client-gui</workingDirectory>-->
+            <!--<executable>${env.NODEJS_HOME}/node.exe</executable>-->
+            <!--<arguments>-->
+            <!--<argument>-->
+            <!--${env.NODEJS_HOME}/node_modules/npm/bin/npm-cli.js-->
+            <!--</argument>-->
+            <!--<argument>-->
+            <!--run-->
+            <!--</argument>-->
+            <!--<argument>-->
+            <!--build-prod-->
+            <!--</argument>-->
+            <!--<argument>-->
+            <!--&#45;&#45;scripts-prepend-node-path=auto-->
+            <!--</argument>-->
+            <!--</arguments>-->
+            <!--</configuration>-->
+            <!--</execution>-->
+            <!--</executions>-->
+            <!--</plugin>-->
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.0.2</version>
@@ -68,10 +61,25 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${basedir}/target/generated-resources/dist</outputDirectory>
+                            <outputDirectory>${basedir}/target/generated-resources/ngClient</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>../HttpShare-client-gui/dist</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>client-generated-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>resources</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/target/generated-resources</directory>
                                     <filtering>false</filtering>
                                 </resource>
                             </resources>
@@ -112,6 +120,13 @@
             <groupId>pl.biltech</groupId>
             <artifactId>HttpShare-core</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>pl.biltech</groupId>
+            <artifactId>HttpShare-client-gui</artifactId>
+            <version>${project.version}</version>
+            <type>pom</type>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
